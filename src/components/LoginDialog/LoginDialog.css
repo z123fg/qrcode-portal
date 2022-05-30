@@ -1,0 +1,11 @@
+.login-dialog_form{
+    display: flex;
+    flex-direction: column;
+    padding:20px;
+}
+
+
+
+.login-dialog{
+    gap:20px
+}
