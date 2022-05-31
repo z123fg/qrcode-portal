@@ -17,7 +17,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import DownloadIcon from '@mui/icons-material/Download';
 import "./UserTable.css";
 
-const KEYS = ["name", "idNum", "organization", "certNum", "ExpDate"];
+const KEYS = ["name", "idNum", "organization", "certNum", "expDate"];
 
 const UserTable = () => {
     const [userList, setUserList] = useState([]);
