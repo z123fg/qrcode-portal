@@ -3,7 +3,32 @@ import { fabric } from "fabric";
 let canvas = null;
 export const getCanvas = () => canvas;
 export const initCanvas = () => {
-    canvas = new fabric.StaticCanvas("canvas", { width: 1654, height: 2339 });
+    const originalWidth = 1654;
+    const originalHeight = 2339;
+    canvas = new fabric.Canvas("main-canvas", {
+        preserveObjectStacking: true,
+        stateful: true,
+        centeredRotation: false,
+        selectionKey: "ctrlKey",
+        controlsAboveOverlay: true,
+    });
+
+    fabric.Image.fromURL("/1.metallographic-testing(entry)-1.png", (image) => {
+        const imageObj = image.set({
+            id: "image_" + 1,
+            width: image.width,
+            height: image.height,
+            selectable:false,
+            hasControl:false,
+            lockMovementY :true,
+            lockMovementX:true
+        });
+        canvas.add(imageObj).renderAll();
+        generateCertWithData({name:"yizhou zhou", idNum:"1231331231231", organization:"antra", certNum:"12333123123", expDate:"2022"});
+    });
+    canvas.setZoom(0.4);
+    canvas.setWidth(originalWidth * canvas.getZoom());
+    canvas.setHeight(originalHeight * canvas.getZoom());
 };
 
 export const generateCertWithData = (data) => {

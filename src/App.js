@@ -15,11 +15,9 @@ function App() {
               <Header/>
               <main>
                   <Actions/>
-
                   <UserTable/>
               </main>
             </div>
-            <Canvas/>
         </UserContext.Provider>
     );
 }
