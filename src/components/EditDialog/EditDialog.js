@@ -1,9 +1,28 @@
-import React, { useEffect, useState } from "react";
-import { Button, Dialog, DialogContent, DialogTitle, TextField, DialogActions, Input, Select, MenuItem, InputLabel, FormControl, FormHelperText } from "@mui/material";
+import React, { useContext, useEffect, useState } from "react";
+import {
+    Button,
+    Dialog,
+    DialogContent,
+    DialogTitle,
+    TextField,
+    DialogActions,
+    Input,
+    Select,
+    MenuItem,
+    InputLabel,
+    FormControl,
+} from "@mui/material";
 import "./EditDialog.css";
 import Canvas from "../Canvas/Canvas";
-import { fabric } from "fabric";
-import { generateCertWithData, getCanvas, getSnapshotData, getSpriteData, initCanvas, updateCertEntry, updateProfileImage } from "../../utils/canvasUtils";
+import {
+    generateCertWithData,
+    getSnapshotData,
+    initCanvas,
+    loadTemplate,
+    updateCertEntry,
+    updateProfileImage,
+} from "../../utils/canvasUtils";
+import { UserContext } from "../../App";
 
 const certTypeMap = {
     MAAM: "光谱分析（A类）中级人员",
@@ -15,122 +34,115 @@ const certTypeMap = {
     MTE: "金相检验初级人员",
     MTM: "金相检验中级人员",
     MTS: "金相检验高级人员",
-}
+};
 
-const EditDialog = ({
-    rowData = { name: "", idNum: "", organization: "", certNum: "", expDate: "" },
-    open,
-    handleClose,
-}) => {
-    const [newRowData, setNewRowData] = useState(rowData);
-    const [certType, setCertType] = useState("MAAM");
+const TextfieldEntryLabelMap = {
+    certType: "Certificate Type",
+    name: "Name",
+    idNum: "ID Number",
+    organization: "Organization",
+    certNum: "Certificate Number",
+    expDate: "Expiration Date",
+};
+/* 
+
+*/
+
+const EditDialog = ({ open, handleClose, onClose }) => {
+    const context = useContext(UserContext);
+
+    let {
+        context: { curUserData, isEditDialogOpen, lastEntry, isCanvasReady },
+        handleEditCurUserData,
+        updateCanvasStatus,
+    } = context;
+    const { certType, name, idNum, organization, certNum, expDate, profileImage } = curUserData;
     const [imageFile, setImageFile] = useState("");
 
     useEffect(() => {
-        if (open) {
+        if (isEditDialogOpen) {
             setTimeout(async () => {
-                await initCanvas(certType);
-                generateCertWithData(newRowData);
-            })
+                initCanvas();
+                await loadTemplate(certType.content);
+                generateCertWithData(curUserData);
+                updateCanvasStatus(true);
+            });
         }
+    }, [isEditDialogOpen, certType.content]);
 
-    }, [open])
-    const handleEdit = (e) => {
-        setNewRowData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-        updateCertEntry(e.target.name, e.target.value)
-    };
+    useEffect(() => {
+        if (lastEntry !== null && isCanvasReady) {
+            updateCertEntry(lastEntry, curUserData[lastEntry].content);
+        }
+    }, [name, idNum, organization, certNum, expDate]);
 
-    const handleSelectCertType = (e) => {
-        setCertType(e.target.value);
-        initCanvas(e.target.value);
-    }
+    useEffect(() => {}, [profileImage]);
 
     const handleSubmit = () => {
-        getSnapshotData();
+        const snapshotData = getSnapshotData();
     };
 
     const handleChangeUploadImage = (event) => {
-        
         var reader = new FileReader();
         reader.onload = function (event) {
-            var imgObj = new Image();
-            imgObj.src = event.target.result;
-            imgObj.onload = function () {
-                updateProfileImage(imgObj)
-            };
+            updateProfileImage(event.target.result);
         };
         reader.readAsDataURL(event.target.files[0]);
     };
     return (
-        <Dialog maxWidth={"1000px"} open={open} className="edit-dialog">
+        <Dialog maxWidth={"1000px"} open={open} className="edit-dialog" onClose={onClose}>
             <DialogTitle>Add New User</DialogTitle>
 
             <DialogContent className="edit-dialog_form">
                 <FormControl style={{ margin: "20px" }}>
-                    <InputLabel id="demo-simple-select-label">Age</InputLabel>
+                    <InputLabel id="demo-simple-select-label">{TextfieldEntryLabelMap.certType}</InputLabel>
                     <Select
                         labelId="demo-simple-select-label"
                         id="demo-simple-select"
-                        value={certType}
-                        label="Age"
-                        onChange={handleSelectCertType}
+                        value={curUserData.certType.content}
+                        label={TextfieldEntryLabelMap.certType}
+                        name="certType"
+                        onChange={handleEditCurUserData}
                     >
-                        {Object.entries(certTypeMap).map(([key, value]) => (<MenuItem key={key} value={key}>{value}</MenuItem>))}
+                        {Object.entries(certTypeMap).map(([key, value]) => (
+                            <MenuItem key={key} value={key}>
+                                {value}
+                            </MenuItem>
+                        ))}
                     </Select>
                 </FormControl>
+                {Object.entries(curUserData)
+                    .filter(([key, value]) => value.type === "text")
+                    .map(([key, value]) => {
+                        return (
+                            <TextField
+                                key={key}
+                                style={{ margin: "20px" }}
+                                onChange={handleEditCurUserData}
+                                name={key}
+                                label={TextfieldEntryLabelMap[key]}
+                                variant="outlined"
+                                value={value.content}
+                            />
+                        );
+                    })}
 
-
-                <TextField
-                    style={{ margin: "20px" }}
-                    onChange={handleEdit}
-                    value={newRowData.name}
-                    name="name"
-                    label="Name"
-                    variant="outlined"
-                />
-                <TextField
-                    style={{ margin: "20px" }}
-                    onChange={handleEdit}
-                    value={newRowData.idNum}
-                    name="idNum"
-                    label="ID Number"
-                    variant="outlined"
-                />
-                <TextField
-                    style={{ margin: "20px" }}
-                    onChange={handleEdit}
-                    value={newRowData.organization}
-                    name="organization"
-                    label="Organization"
-                    variant="outlined"
-                />
-                <TextField
-                    style={{ margin: "20px" }}
-                    onChange={handleEdit}
-                    value={newRowData.certNum}
-                    name="certNum"
-                    label="Cert Number"
-                    variant="outlined"
-                />
-                <TextField
-                    style={{ margin: "20px" }}
-                    onChange={handleEdit}
-                    value={newRowData.ExpDate}
-                    name="expDate"
-                    label="Expiration Date"
-                    variant="outlined"
-                />
                 <label htmlFor="contained-button-file">
-                    <Input
+                    <input
                         onChange={handleChangeUploadImage}
                         style={{ display: "none" }}
                         accept="image/*"
                         id="contained-button-file"
-                        multiple
                         type="file"
                         value={imageFile}
                     />
-                    <Button variant="contained" component="span" onClick={()=>{setImageFile("")}}>
+                    <Button
+                        variant="contained"
+                        component="span"
+                        onClick={() => {
+                            setImageFile("");
+                        }}
+                    >
                         Upload
                     </Button>
                 </label>

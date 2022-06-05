@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Button, Typography, Paper } from "@mui/material";
 import "./Actions.css";
 import EditDialog from "../EditDialog/EditDialog";
 import csv2JSON from "../../utils/csv2JSON";
+import { UserContext } from "../../App";
+import curUserData from "../../mockData/curUserData";
+import defaultCurUserData from "../../mockData/defaultCurUserData";
 
 const Actions = () => {
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const { openEditDialog, setCurUserData, openUploadListDialog} = useContext(UserContext);
     const [uploadValue, setUploadValue] = useState("");
-    const handleCloseDialog = () => {
-        setIsDialogOpen(false);
-    };
 
     useEffect(() => {
         fetch("../../public/metallographic-testing(entry).pdf")
@@ -20,7 +20,7 @@ const Actions = () => {
                 var reader = new FileReader();
                 reader.readAsDataURL(blob);
                 reader.onloadend = function () {
-                    var base64data = reader.result;;
+                    var base64data = reader.result;
                 };
             });
     }, []);
@@ -28,17 +28,21 @@ const Actions = () => {
     const handleUploadFile = async (e) => {
         const result = await csv2JSON(e.target.files[0]);
     };
+    const handleClickAddOneUser = () => {
+        openEditDialog();
+        setCurUserData(defaultCurUserData);
+    };
 
     return (
         <div className="actions-container">
             <Paper className="actions__paper">
-                <Button variant="contained" onClick={() => setIsDialogOpen(true)}>
+                <Button variant="contained" onClick={handleClickAddOneUser}>
                     Add one user
                 </Button>
                 <Typography>输入用户信息 </Typography>
             </Paper>
             <Paper className="actions__paper">
-                <label htmlFor="csv-upload">
+                {/* <label htmlFor="csv-upload">
                     <input
                         onClick={() => setUploadValue("")}
                         value={uploadValue}
@@ -51,11 +55,11 @@ const Actions = () => {
                     <Button component="span" variant="contained">
                         Add multiple user
                     </Button>
-                </label>
+                </label> */}
+                <Button variant="contained" onClick={()=>{openUploadListDialog()}}>Add multiple user</Button>
 
                 <Typography>上传用户列表（xsl）</Typography>
             </Paper>
-            <EditDialog open={isDialogOpen} handleClose={handleCloseDialog} />
         </div>
     );
 };
