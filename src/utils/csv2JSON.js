@@ -4,7 +4,6 @@ export default function csv2JSON(file) {
             var r = new FileReader();
             r.onload = function (e) {
                 var csv = e.target.result;
-                console.log("csv",csv)
                 const lines = csv.split('\r\n')
                 const result = []
                 const headers = lines[0].split(',');

@@ -20,16 +20,13 @@ const Actions = () => {
                 var reader = new FileReader();
                 reader.readAsDataURL(blob);
                 reader.onloadend = function () {
-                    var base64data = reader.result;
-                    console.log("base64",base64data.length);
+                    var base64data = reader.result;;
                 };
             });
     }, []);
 
     const handleUploadFile = async (e) => {
-        console.log("onchange", e.target.value);
         const result = await csv2JSON(e.target.files[0]);
-        console.log("jsono", result);
     };
 
     return (

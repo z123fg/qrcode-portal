@@ -11,7 +11,6 @@ export default function convertToBase64(selectedFile) {
         fileReader.onload = function(fileLoadedEvent) {
             base64 = fileLoadedEvent.target.result;
             // Print data in console
-            console.log(base64);
         };
         // Convert data to base64
         fileReader.readAsDataURL(fileToLoad);

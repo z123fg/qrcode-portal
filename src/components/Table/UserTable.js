@@ -30,7 +30,7 @@ const UserTable = () => {
 
     const generateFilteredList = () => {
         if (keyword === "") return userList;
-        return userList.filter((row) => Object.values(row).some((entry) => entry.include(keyword)));
+        return userList.filter((row) => Object.values(row).some((entry) => (entry+"").includes(keyword)));
     };
     return (
         <section className="userTable-container">

@@ -1,51 +1,62 @@
-import React, { useState } from "react";
-import { Button, Dialog, DialogContent, DialogTitle, TextField, DialogActions, Input } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Button, Dialog, DialogContent, DialogTitle, TextField, DialogActions, Input, Select, MenuItem, InputLabel, FormControl, FormHelperText } from "@mui/material";
 import "./EditDialog.css";
 import Canvas from "../Canvas/Canvas";
 import { fabric } from "fabric";
-import { getCanvas } from "../../utils/canvasUtils";
+import { generateCertWithData, getCanvas, getSnapshotData, getSpriteData, initCanvas, updateCertEntry, updateProfileImage } from "../../utils/canvasUtils";
+
+const certTypeMap = {
+    MAAM: "光谱分析（A类）中级人员",
+    MAAS: "光谱分析（A类）高级人员",
+    MABM: "光谱分析（B类）中级人员",
+    MPE: "力学性能试验初级人员",
+    MPM: "力学性能试验中级人员",
+    MPS: "力学性能试验高级人员",
+    MTE: "金相检验初级人员",
+    MTM: "金相检验中级人员",
+    MTS: "金相检验高级人员",
+}
 
 const EditDialog = ({
-    rowData = { name: "", idNum: "", organization: "", certNum: "", ExpDate: "" },
+    rowData = { name: "", idNum: "", organization: "", certNum: "", expDate: "" },
     open,
     handleClose,
 }) => {
     const [newRowData, setNewRowData] = useState(rowData);
+    const [certType, setCertType] = useState("MAAM");
+    const [imageFile, setImageFile] = useState("");
 
+    useEffect(() => {
+        if (open) {
+            setTimeout(async () => {
+                await initCanvas(certType);
+                generateCertWithData(newRowData);
+            })
+        }
+
+    }, [open])
     const handleEdit = (e) => {
         setNewRowData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+        updateCertEntry(e.target.name, e.target.value)
     };
 
-    const handleSubmit = () => {};
+    const handleSelectCertType = (e) => {
+        setCertType(e.target.value);
+        initCanvas(e.target.value);
+    }
+
+    const handleSubmit = () => {
+        getSnapshotData();
+    };
 
     const handleChangeUploadImage = (event) => {
+        
         var reader = new FileReader();
         reader.onload = function (event) {
-            console.log(event.target.result);
             var imgObj = new Image();
             imgObj.src = event.target.result;
             imgObj.onload = function () {
-                var image = new fabric.Image(imgObj, { hasControls: true, selectable: true });
-                image.set({
-                    padding: 10,
-                    cornersize: 5,
-                    selectable: true,
-                    hasControls: true,
-                    cornerStrokeColor: "#B13D6C",
-                    transparentCorners: false,
-                    cornerColor: "#B13D6C",
-                    originX: "center",
-                    left: 1235,
-                    top: 1185,
-                });
-                const initWidth = image.width;
-                const initHeight = image.height;
-                const targetScale = Math.max(175 / initWidth, 255 / initHeight);
-                image.scale(targetScale);
-                console.log(initWidth, initHeight);
-                getCanvas().add(image);
-
-                getCanvas().renderAll();
+                updateProfileImage(imgObj)
             };
         };
         reader.readAsDataURL(event.target.files[0]);
@@ -53,7 +64,22 @@ const EditDialog = ({
     return (
         <Dialog maxWidth={"1000px"} open={open} className="edit-dialog">
             <DialogTitle>Add New User</DialogTitle>
+
             <DialogContent className="edit-dialog_form">
+                <FormControl style={{ margin: "20px" }}>
+                    <InputLabel id="demo-simple-select-label">Age</InputLabel>
+                    <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        value={certType}
+                        label="Age"
+                        onChange={handleSelectCertType}
+                    >
+                        {Object.entries(certTypeMap).map(([key, value]) => (<MenuItem key={key} value={key}>{value}</MenuItem>))}
+                    </Select>
+                </FormControl>
+
+
                 <TextField
                     style={{ margin: "20px" }}
                     onChange={handleEdit}
@@ -90,7 +116,7 @@ const EditDialog = ({
                     style={{ margin: "20px" }}
                     onChange={handleEdit}
                     value={newRowData.ExpDate}
-                    name="ExpDate"
+                    name="expDate"
                     label="Expiration Date"
                     variant="outlined"
                 />
@@ -102,8 +128,9 @@ const EditDialog = ({
                         id="contained-button-file"
                         multiple
                         type="file"
+                        value={imageFile}
                     />
-                    <Button variant="contained" component="span">
+                    <Button variant="contained" component="span" onClick={()=>{setImageFile("")}}>
                         Upload
                     </Button>
                 </label>
