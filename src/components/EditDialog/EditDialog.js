@@ -15,7 +15,9 @@ import {
 import "./EditDialog.css";
 import Canvas from "../Canvas/Canvas";
 import {
+    destroyCanvas,
     generateCertWithData,
+    getCanvas,
     getSnapshotData,
     initCanvas,
     loadTemplate,
@@ -23,8 +25,9 @@ import {
     updateProfileImage,
 } from "../../utils/canvasUtils";
 import { UserContext } from "../../App";
+import tableUserData2CanvasUserDataPipe from "../../utils/tableUserData2CanvasUserDataPipe";
 
-const certTypeMap = {
+export const certTypeMap = {
     MAAM: "光谱分析（A类）中级人员",
     MAAS: "光谱分析（A类）高级人员",
     MABM: "光谱分析（B类）中级人员",
@@ -35,6 +38,13 @@ const certTypeMap = {
     MTM: "金相检验中级人员",
     MTS: "金相检验高级人员",
 };
+export const invCertTypeMap = (() => {
+    const map = {};
+    Object.entries(certTypeMap).forEach(([k,v])=>{
+        map[v] = k
+    })
+    return map
+})()
 
 const TextfieldEntryLabelMap = {
     certType: "Certificate Type",
@@ -52,19 +62,19 @@ const EditDialog = ({ open, handleClose, onClose }) => {
     const context = useContext(UserContext);
 
     let {
-        context: { curUserData, isEditDialogOpen, lastEntry, isCanvasReady },
+        context: { curUserData, isEditDialogOpen, lastEntry, isCanvasReady, handleSubmitEdit },
         handleEditCurUserData,
         updateCanvasStatus,
     } = context;
-    const { certType, name, idNum, organization, certNum, expDate, profileImage } = curUserData;
+    const pickedCurUserData = tableUserData2CanvasUserDataPipe(curUserData);
+    const { certType, name, idNum, organization, certNum, expDate, profileImage} = pickedCurUserData;
     const [imageFile, setImageFile] = useState("");
-
     useEffect(() => {
         if (isEditDialogOpen) {
             setTimeout(async () => {
                 initCanvas();
                 await loadTemplate(certType.content);
-                generateCertWithData(curUserData);
+                generateCertWithData(pickedCurUserData);
                 updateCanvasStatus(true);
             });
         }
@@ -72,16 +82,17 @@ const EditDialog = ({ open, handleClose, onClose }) => {
 
     useEffect(() => {
         if (lastEntry !== null && isCanvasReady) {
-            updateCertEntry(lastEntry, curUserData[lastEntry].content);
+            updateCertEntry(lastEntry, pickedCurUserData[lastEntry].content);
         }
     }, [name, idNum, organization, certNum, expDate]);
 
     useEffect(() => {}, [profileImage]);
 
-    const handleSubmit = () => {
-        const snapshotData = getSnapshotData();
-    };
-
+    const handleSubmit =() => {
+        let snapshot = getSnapshotData();
+        handleSubmitEdit(curUserData.serialNum.content,snapshot);
+        handleClose();
+    }
     const handleChangeUploadImage = (event) => {
         var reader = new FileReader();
         reader.onload = function (event) {
@@ -90,7 +101,18 @@ const EditDialog = ({ open, handleClose, onClose }) => {
         reader.readAsDataURL(event.target.files[0]);
     };
     return (
-        <Dialog maxWidth={"1000px"} open={open} className="edit-dialog" onClose={onClose}>
+        <Dialog
+            maxWidth={"1000px"}
+            open={open}
+            className="edit-dialog"
+            onClose={onClose}
+            TransitionProps={{
+                onExited: () => {
+                    destroyCanvas();
+                    
+                },
+            }}
+        >
             <DialogTitle>Add New User</DialogTitle>
 
             <DialogContent className="edit-dialog_form">
@@ -99,7 +121,7 @@ const EditDialog = ({ open, handleClose, onClose }) => {
                     <Select
                         labelId="demo-simple-select-label"
                         id="demo-simple-select"
-                        value={curUserData.certType.content}
+                        value={pickedCurUserData.certType.content}
                         label={TextfieldEntryLabelMap.certType}
                         name="certType"
                         onChange={handleEditCurUserData}
@@ -111,7 +133,7 @@ const EditDialog = ({ open, handleClose, onClose }) => {
                         ))}
                     </Select>
                 </FormControl>
-                {Object.entries(curUserData)
+                {Object.entries(pickedCurUserData)
                     .filter(([key, value]) => value.type === "text")
                     .map(([key, value]) => {
                         return (

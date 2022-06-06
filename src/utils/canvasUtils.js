@@ -37,7 +37,7 @@ const defaultTextProps = {
         scaleX: 1,
         scaleY: 1,
         angle: 0,
-        entry: "text",
+        entry: "name",
     },
     idNum: {
         cornerStrokeColor: "#B13D6C",
@@ -48,7 +48,7 @@ const defaultTextProps = {
         scaleX: 1,
         scaleY: 1,
         angle: 0,
-        entry: "text",
+        entry: "idNum",
     },
     organization: {
         cornerStrokeColor: "#B13D6C",
@@ -59,7 +59,7 @@ const defaultTextProps = {
         scaleX: 1,
         scaleY: 1,
         angle: 0,
-        entry: "text",
+        entry: "organization",
     },
     certNum: {
         cornerStrokeColor: "#B13D6C",
@@ -70,7 +70,7 @@ const defaultTextProps = {
         scaleX: 1,
         scaleY: 1,
         angle: 0,
-        entry: "text",
+        entry: "certNum",
     },
     expDate: {
         cornerStrokeColor: "#B13D6C",
@@ -81,7 +81,7 @@ const defaultTextProps = {
         scaleX: 1,
         scaleY: 1,
         angle: 0,
-        entry: "text",
+        entry: "expDate",
     },
 };
 
@@ -154,6 +154,7 @@ export const updateProfileImage = async (imgObj) => {
 };
 
 export const generateCertWithData = (rowData) => {
+    console.log("rowData",rowData)
     const spriteDataList = Object.entries(rowData).map(([key, value]) => ({ entry: key, ...value }));
     spriteDataList
         .filter((item) => item.type === "text")
@@ -174,6 +175,7 @@ export const generateCertWithData = (rowData) => {
         .filter((item) => item.type === "image")
         .forEach((item) => {
             fabric.Image.fromURL(item.content, (image) => {
+                console.log("image",image)
                 image.set({
                     ...defaultImageProps,
                     left: item.left,

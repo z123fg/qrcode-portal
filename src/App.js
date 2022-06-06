@@ -17,8 +17,14 @@ function App() {
         lastEntry: null,
         isCanvasReady: false,
         isUploadListDialogOpen: false,
+        userDataList: [],
+        handleSubmitEdit: () => {},
     });
-   
+
+    const setHandleSubmitEdit = (fn) => {
+        setContext((prev) => ({ ...prev, handleSubmitEdit: fn }));
+    };
+
     const openEditDialog = () => {
         setContext((prev) => ({ ...prev, isEditDialogOpen: true }));
     };
@@ -27,8 +33,8 @@ function App() {
     };
 
     const onCloseEditDialog = () => {
-        destroyCanvas();
-    }
+        closeEditDialog();
+    };
 
     const setCurUserData = (curUserData) => {
         setContext((prev) => ({ ...prev, curUserData: { ...curUserData } }));
@@ -58,6 +64,9 @@ function App() {
             },
         }));
     };
+    const onCloseUploadListDialog =() => {
+        closeUploadListDialog();
+    }
     return (
         <UserContext.Provider
             value={{
@@ -69,17 +78,22 @@ function App() {
                 closeUploadListDialog,
                 updateCanvasStatus,
                 openUploadListDialog,
+                setHandleSubmitEdit,
             }}
         >
             <div className="App">
                 <Header />
                 <main>
                     <Actions />
-                    <UserTable />
+                    <UserTable userDataList={context.userDataList} />
                 </main>
             </div>
-            <EditDialog open={context.isEditDialogOpen} handleClose={closeEditDialog} onClose={onCloseEditDialog}/>
-            <UploadListDialog open={context.isUploadListDialogOpen} handleClose={closeUploadListDialog} />
+            <EditDialog
+                open={context.isEditDialogOpen}
+                handleClose={closeEditDialog}
+                onClose={onCloseEditDialog}
+            />
+            <UploadListDialog open={context.isUploadListDialogOpen} handleClose={closeUploadListDialog} onClose={onCloseUploadListDialog} />
         </UserContext.Provider>
     );
 }

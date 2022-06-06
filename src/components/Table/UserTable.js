@@ -13,36 +13,56 @@ import {
     IconButton,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import DownloadIcon from "@mui/icons-material/Download";
 import "./UserTable.css";
-import mockUserList from "../../mockData/mockUserList";
 import { UserContext } from "../../App";
-import curUserData from "../../mockData/curUserData";
+import { certTypeMap } from "../EditDialog/EditDialog";
+import CheckIcon from "@mui/icons-material/Check";
+import CloseIcon from "@mui/icons-material/Close";
+const KEYS = [
+    "serialNum",
+    "name",
+    "idNum",
+    "organization",
+    "certNum",
+    "expDate",
+    "issuingAgency",
+    "hasProfileImage",
+    "certType",
+];
 
-const KEYS = ["name", "idNum", "organization", "certNum", "expDate"];
-
-const UserTable = () => {
+const UserTable = ({ userDataList }) => {
     const { openEditDialog, setCurUserData } = useContext(UserContext);
-    const [userList, setUserList] = useState(mockUserList);
     const [keyword, setKeyword] = useState("");
-
     const handleInputKeyword = (e) => {
         setKeyword(e.target.value);
     };
 
     const generateFilteredList = () => {
-        if (keyword === "") return userList;
-        return userList.filter((row) => Object.values(row).some((entry) => (entry + "").includes(keyword)));
+        const displayedList = userDataList.map((item) => ({
+            ...item,
+            hasProfileImage: {
+                content:
+                    item?.profileImage?.content?.length || "" > 10 ? (
+                        <CheckIcon sx={{ color: "green" }} />
+                    ) : (
+                        <CloseIcon sx={{ color: "red" }} />
+                    ),
+            },
+        }));
+        if (keyword === "") return displayedList;
+        return displayedList.filter((row) =>
+            Object.values(row).some((entry) => (entry.content + "").includes(keyword))
+        );
     };
 
-    const handleClickEditRow = () => {
-        setCurUserData(curUserData);        openEditDialog();
-
+    const handleClickEditRow = (row) => {
+        //row = tableUserData2CanvasUserDataPipe(row);
+        setCurUserData(row);
+        openEditDialog();
     };
     return (
         <section className="userTable-container">
-            {userList.length > 0 ? (
+            {userDataList.length > 0 ? (
                 <div
                     style={{
                         display: "flex",
@@ -69,18 +89,30 @@ const UserTable = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {generateFilteredList().map((row) => (
-                                    <TableRow key={row.id}>
-                                        {KEYS.map((key) => (
-                                            <TableCell key={key + row.id}>{row[key]}</TableCell>
-                                        ))}
-                                        <TableCell>
-                                            <IconButton onClick={handleClickEditRow}>
-                                                <EditIcon />
-                                            </IconButton>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
+                                {generateFilteredList().map((row) => {
+                                    return (
+                                        <TableRow key={row.certNum.content}>
+                                            {KEYS.map((key) => {
+                                                console.log("row", row, key);
+                                                let value = row[key].content;
+                                                if (key === "certType") {
+                                                    value = certTypeMap[value];
+                                                }
+
+                                                return (
+                                                    <TableCell key={key + row.certNum.content}>
+                                                        {value}
+                                                    </TableCell>
+                                                );
+                                            })}
+                                            <TableCell>
+                                                <IconButton onClick={() => handleClickEditRow(row)}>
+                                                    <EditIcon />
+                                                </IconButton>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
                             </TableBody>
                         </Table>
                     </TableContainer>
