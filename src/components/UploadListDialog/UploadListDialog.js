@@ -1,38 +1,37 @@
 import { Button, Dialog, DialogActions, DialogContent } from "@mui/material";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import csv from "csvtojson";
 import csv2JSON from "../../utils/csv2JSON";
 import csvList2TableUserDataListPipe from "../../utils/csvList2TableUserDataListPipe";
 import UserTable from "../Table/UserTable";
-import { UserContext } from "../../App";
 import defaultCurUserData from "../../mockData/defaultCurUserData";
+import { getSnapshotData } from "../../utils/canvasUtils";
+import EditDialog from "../EditDialog/EditDialog";
+import curUserData from "../../mockData/curUserData";
 
-const UploadListDialog = ({ open, handleClose,onClose }) => {
+const userTableColumns = [
+    "serialNum",
+    "name",
+    "idNum",
+    "organization",
+    "certNum",
+    "expDate",
+    "issuingAgency",
+    "hasProfileImage",
+    "certType",
+];
+
+const UploadListDialog = ({ open, handleClose }) => {
     const [imageFile, setImageFile] = useState("");
     const [csvFile, setCsvFile] = useState("");
     const [userDataList, setUserDataList] = useState([]);
-    const { setHandleSubmitEdit } = useContext(UserContext);
-
-    useEffect(() => {
-        setHandleSubmitEdit((serialNum, snapshot) => {
-            console.log("serialNum", serialNum);
-            setUserDataList((prev) => {
-                const targetIndex = prev.findIndex((item) => item.serialNum.content === serialNum);
-                console.log("index", targetIndex);
-                snapshot = { ...prev[targetIndex], ...snapshot };
-                console.log("prev", prev, snapshot, serialNum);
-                return [...prev.slice(0, targetIndex), snapshot, ...prev.slice(targetIndex + 1)];
-            });
-        });
-    }, []);
-
-    
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [curUserData, setCurUserData] = useState(defaultCurUserData)
 
     const handleChangeUploadImage = (event) => {
         Array.from(event.target.files).forEach((file) => {
             var reader = new FileReader();
             reader.onload = function (event) {
-                console.log("file", event.target.result, file);
                 setUserDataList((prev) => {
                     const targetIndex = prev.findIndex(
                         (item) => item.serialNum.content === file.name.split(".")[0]
@@ -58,13 +57,37 @@ const UploadListDialog = ({ open, handleClose,onClose }) => {
     const handleUploadCSV = async (e) => {
         const csvList = await csv2JSON(e.target.files[0]);
         const newUserDataList = csvList2TableUserDataListPipe(csvList);
-        console.log("csvLIst", newUserDataList);
         setUserDataList(newUserDataList);
     };
-    console.log("udl", userDataList);
+
+    const handleSubmitEdit = (snapshot) => {
+            setUserDataList((prev) => {
+                const targetIndex = prev.findIndex((item) => item.serialNum.content === curUserData.serialNum.content);
+                snapshot = { ...prev[targetIndex], ...snapshot };
+                return [...prev.slice(0, targetIndex), snapshot, ...prev.slice(targetIndex + 1)];
+            });
+    }
+
+    const handleDeleteEdit = () => {
+        setUserDataList(prev=>prev.filter(item=>item.serialNum.content === curUserData.serialNum.content));
+    }
+
+    const handleDownloadEdit = () => {
+
+    }
+
+    const handleClickEditTableRow = (serialNum) => {
+        setCurUserData(userDataList.find(item=>item.serialNum.content === serialNum));
+        setIsEditDialogOpen(true)
+    }
+
+    const onCloseDialog = () => {
+
+    }
+
 
     return (
-        <Dialog open={open} maxWidth={"1000px"} onClose={onClose}TransitionProps={{
+        <Dialog open={open} maxWidth={"1000px"} onClose={onCloseDialog}TransitionProps={{
             onExited: () => {
                 setUserDataList([]);
                 
@@ -98,7 +121,7 @@ const UploadListDialog = ({ open, handleClose,onClose }) => {
                         Upload Images
                     </Button>
                 </label>
-                <UserTable userDataList={userDataList} />
+                <UserTable userDataList={userDataList} handleClickEditTableRow={handleClickEditTableRow} columns={userTableColumns}/>
             </DialogContent>
 
             <DialogActions>
@@ -107,6 +130,17 @@ const UploadListDialog = ({ open, handleClose,onClose }) => {
                 <Button>Download</Button>
                 <Button onClick={handleClose}>Cancel</Button>
             </DialogActions>
+            <EditDialog 
+                open={isEditDialogOpen}
+                curUserData={curUserData}
+                handleClose={()=>{
+                    setIsEditDialogOpen(false)
+                }}
+                onClose={()=>{}}
+                handleSubmit={handleSubmitEdit}
+                handleDelete={handleDeleteEdit}
+                handleDownload={handleDownloadEdit}
+            />
         </Dialog>
     );
 };

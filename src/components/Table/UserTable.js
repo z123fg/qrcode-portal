@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import {
     Table,
     TableHead,
@@ -14,25 +14,15 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import "./UserTable.css";
-import { UserContext } from "../../App";
-import { certTypeMap } from "../EditDialog/EditDialog";
+import EditDialog, { certTypeMap } from "../EditDialog/EditDialog";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
-const KEYS = [
-    "serialNum",
-    "name",
-    "idNum",
-    "organization",
-    "certNum",
-    "expDate",
-    "issuingAgency",
-    "hasProfileImage",
-    "certType",
-];
+import { v4 as uuidv4 } from 'uuid';
 
-const UserTable = ({ userDataList }) => {
-    const { openEditDialog, setCurUserData } = useContext(UserContext);
+
+const UserTable = ({ userDataList, handleClickEditTableRow , columns}) => {
     const [keyword, setKeyword] = useState("");
+    
     const handleInputKeyword = (e) => {
         setKeyword(e.target.value);
     };
@@ -55,11 +45,7 @@ const UserTable = ({ userDataList }) => {
         );
     };
 
-    const handleClickEditRow = (row) => {
-        //row = tableUserData2CanvasUserDataPipe(row);
-        setCurUserData(row);
-        openEditDialog();
-    };
+   
     return (
         <section className="userTable-container">
             {userDataList.length > 0 ? (
@@ -82,7 +68,7 @@ const UserTable = ({ userDataList }) => {
                         <Table>
                             <TableHead>
                                 <TableRow>
-                                    {KEYS.map((key) => (
+                                    {columns.map((key) => (
                                         <TableCell key={key}>{key}</TableCell>
                                     ))}
                                     <TableCell>actions</TableCell>
@@ -91,22 +77,21 @@ const UserTable = ({ userDataList }) => {
                             <TableBody>
                                 {generateFilteredList().map((row) => {
                                     return (
-                                        <TableRow key={row.certNum.content}>
-                                            {KEYS.map((key) => {
-                                                console.log("row", row, key);
+                                        <TableRow key={row._id||uuidv4()}>
+                                            {columns.map((key) => {
                                                 let value = row[key].content;
                                                 if (key === "certType") {
                                                     value = certTypeMap[value];
                                                 }
 
                                                 return (
-                                                    <TableCell key={key + row.certNum.content}>
+                                                    <TableCell key={key + row._id||uuidv4()}>
                                                         {value}
                                                     </TableCell>
                                                 );
                                             })}
                                             <TableCell>
-                                                <IconButton onClick={() => handleClickEditRow(row)}>
+                                                <IconButton onClick={() => handleClickEditTableRow(row.serialNum.content)}>
                                                     <EditIcon />
                                                 </IconButton>
                                             </TableCell>

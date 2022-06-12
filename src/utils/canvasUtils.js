@@ -95,6 +95,7 @@ fabric.Canvas.prototype.getObjsByProp = function (...rest) {
 let canvas = null;
 export const getCanvas = () => canvas;
 export const initCanvas = () => {
+    destroyCanvas()
     const originalWidth = 1654;
     const originalHeight = 2339;
     canvas = new fabric.Canvas("main-canvas", {
@@ -136,14 +137,18 @@ export const loadTemplate = async (type) => {
     });
 };
 
-export const updateCertEntry = (entry, text) => {
-    const targetObj = canvas.getObjsByProp({ entry })[0];
-    targetObj.set({ text });
-    canvas.renderAll();
+export const updateCertEntry = (curUserData) => {
+    Object.entries(curUserData).forEach(([key,value])=>{
+        const targetObj = canvas.getObjsByProp({ entry:key })[0];
+        if(targetObj?.type==="text"&&targetObj.text !== value?.content){
+            targetObj.set({text:value.content})
+            canvas.renderAll()
+        }
+    })
 };
 export const updateProfileImage = async (imgObj) => {
     const oldImageObj = canvas.getObjsByProp({ entry: "profileImage" })[0];
-    canvas.remove(oldImageObj);
+    if(oldImageObj!==undefined) canvas.remove(oldImageObj);
     fabric.Image.fromURL(imgObj, (image) => {
         image.set({
             ...defaultImageProps,
@@ -154,7 +159,6 @@ export const updateProfileImage = async (imgObj) => {
 };
 
 export const generateCertWithData = (rowData) => {
-    console.log("rowData",rowData)
     const spriteDataList = Object.entries(rowData).map(([key, value]) => ({ entry: key, ...value }));
     spriteDataList
         .filter((item) => item.type === "text")
@@ -175,7 +179,6 @@ export const generateCertWithData = (rowData) => {
         .filter((item) => item.type === "image")
         .forEach((item) => {
             fabric.Image.fromURL(item.content, (image) => {
-                console.log("image",image)
                 image.set({
                     ...defaultImageProps,
                     left: item.left,
@@ -192,7 +195,7 @@ export const generateCertWithData = (rowData) => {
     canvas.renderAll();
 };
 
-export const getSnapshotData = () => {
+export const getSnapshotData = (certType) => {
     const snapshotData = {};
     canvas
         .getObjects()
@@ -208,6 +211,7 @@ export const getSnapshotData = () => {
                 type: obj.type,
             };
         });
+        snapshotData.certType = {content:certType, type:"select"}
     return snapshotData;
 };
 

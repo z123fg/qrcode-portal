@@ -2,15 +2,16 @@ import React, { useContext, useEffect, useState } from "react";
 import { Button, Typography, Paper } from "@mui/material";
 import "./Actions.css";
 import EditDialog from "../EditDialog/EditDialog";
-import csv2JSON from "../../utils/csv2JSON";
-import { UserContext } from "../../App";
-import curUserData from "../../mockData/curUserData";
 import defaultCurUserData from "../../mockData/defaultCurUserData";
+import UploadListDialog from "../UploadListDialog/UploadListDialog";
+import { createSingleUserData } from "../../services/userData";
+import { PortalContext } from "../../App";
 
 const Actions = () => {
-    const { openEditDialog, setCurUserData, openUploadListDialog} = useContext(UserContext);
-    const [uploadValue, setUploadValue] = useState("");
-
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const { refreshGlobalUserDataList } = useContext(PortalContext)
+    const [isUploadListDialogOpen, setIsUploadListDialogOpen] = useState(false);
+    const [curUserData, setCurUserData] = useState(defaultCurUserData);
     useEffect(() => {
         fetch("../../public/metallographic-testing(entry).pdf")
             .then((res) => {
@@ -25,13 +26,25 @@ const Actions = () => {
             });
     }, []);
 
-    const handleUploadFile = async (e) => {
-        const result = await csv2JSON(e.target.files[0]);
-    };
     const handleClickAddOneUser = () => {
-        openEditDialog();
-        setCurUserData(defaultCurUserData);
+        setIsEditDialogOpen(true)
     };
+
+    const handleDownloadEdit = () => {
+
+    }
+
+    const handleSubmitEdit = (snapshot) => {
+        console.log("snapshot", snapshot)
+        createSingleUserData(snapshot,refreshGlobalUserDataList);
+    }
+
+    const onCloseEditDialog = () => {
+        setCurUserData({ ...defaultCurUserData });
+    }
+
+
+
 
     return (
         <div className="actions-container">
@@ -40,6 +53,15 @@ const Actions = () => {
                     Add one user
                 </Button>
                 <Typography>输入用户信息 </Typography>
+                <EditDialog
+                    open={isEditDialogOpen}
+                    handleClose={() => setIsEditDialogOpen(false)}
+                    onClose={onCloseEditDialog}
+                    curUserData={curUserData}
+                    handleDelete={null}
+                    handleDownload={handleDownloadEdit}
+                    handleSubmit={handleSubmitEdit}
+                />
             </Paper>
             <Paper className="actions__paper">
                 {/* <label htmlFor="csv-upload">
@@ -56,9 +78,11 @@ const Actions = () => {
                         Add multiple user
                     </Button>
                 </label> */}
-                <Button variant="contained" onClick={()=>{openUploadListDialog()}}>Add multiple user</Button>
+                <Button variant="contained" onClick={() => { setIsUploadListDialogOpen(true) }}>Add multiple user</Button>
 
                 <Typography>上传用户列表（xsl）</Typography>
+                <UploadListDialog open={isUploadListDialogOpen} handleClose={() => setIsUploadListDialogOpen(false)} />
+
             </Paper>
         </div>
     );

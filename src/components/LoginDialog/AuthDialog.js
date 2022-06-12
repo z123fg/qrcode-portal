@@ -1,20 +1,24 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { Button, Dialog, DialogContent, DialogTitle, TextField, DialogActions } from "@mui/material";
-import { UserContext } from "../../App";
-import "./LoginDialog.css";
+import "./AuthDialog.css";
+import { login, register } from "../../services/auth";
 
-const LoginDialog = ({ open, handleClose }) => {
-    const userContext = useContext(UserContext);
+const AuthDialog = ({ open, handleClose, type }) => {
 
     const [userInfo, setUserInfo] = useState({ username: "", password: "" });
     const handleEdit = (e) => {
         setUserInfo((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
-    const handleSubmit = () => {};
+    const handleSubmit = () => {
+        type==="login"?
+        login(userInfo.username, userInfo.password)
+        :
+        register(userInfo.username, userInfo.password)
+    };
     return (
         <Dialog open={open} className="login-dialog">
-            <DialogTitle>Login</DialogTitle>
+            <DialogTitle>{type==="login"?"Login":"Register"}</DialogTitle>
             <DialogContent className="login-dialog_form">
                 <TextField
                     style={{ margin: "20px" }}
@@ -41,4 +45,4 @@ const LoginDialog = ({ open, handleClose }) => {
     );
 };
 
-export default LoginDialog;
+export default AuthDialog;

@@ -1,100 +1,34 @@
 import "./App.css";
-import { createContext, useEffect, useState } from "react";
+import React, { createContext, useState } from "react"
 import Header from "./components/Header/Header";
 import Actions from "./components/Actions/Actions";
 import UserTable from "./components/Table/UserTable";
-import EditDialog from "./components/EditDialog/EditDialog";
-import defaultCurUserData from "./mockData/defaultCurUserData";
-import UploadListDialog from "./components/UploadListDialog/UploadListDialog";
-import { destroyCanvas } from "./utils/canvasUtils";
+import { getGlobalUserDataList } from "./services/userData";
+import GlobalUserTable from "./components/GlobalTable/GlobalTable";
 
-export const UserContext = createContext();
+export const PortalContext = createContext();
+
 
 function App() {
-    const [context, setContext] = useState({
-        curUserData: defaultCurUserData,
-        isEditDialogOpen: false,
-        lastEntry: null,
-        isCanvasReady: false,
-        isUploadListDialogOpen: false,
-        userDataList: [],
-        handleSubmitEdit: () => {},
-    });
-
-    const setHandleSubmitEdit = (fn) => {
-        setContext((prev) => ({ ...prev, handleSubmitEdit: fn }));
-    };
-
-    const openEditDialog = () => {
-        setContext((prev) => ({ ...prev, isEditDialogOpen: true }));
-    };
-    const closeEditDialog = async () => {
-        setContext((prev) => ({ ...prev, isEditDialogOpen: false, isCanvasReady: false }));
-    };
-
-    const onCloseEditDialog = () => {
-        closeEditDialog();
-    };
-
-    const setCurUserData = (curUserData) => {
-        setContext((prev) => ({ ...prev, curUserData: { ...curUserData } }));
-    };
-
-    const updateCanvasStatus = (status) => {
-        setContext((prev) => ({
-            ...prev,
-            isCanvasReady: status,
-        }));
-    };
-
-    const openUploadListDialog = () => {
-        setContext((prev) => ({ ...prev, isUploadListDialogOpen: true }));
-    };
-    const closeUploadListDialog = () => {
-        setContext((prev) => ({ ...prev, isUploadListDialogOpen: false }));
-    };
-
-    const handleEditCurUserData = (e) => {
-        setContext((prev) => ({
-            ...prev,
-            lastEntry: e.target.name,
-            curUserData: {
-                ...prev.curUserData,
-                [e.target.name]: { ...prev.curUserData[e.target.name], content: e.target.value },
-            },
-        }));
-    };
-    const onCloseUploadListDialog =() => {
-        closeUploadListDialog();
+    const [globalUserDataList, setGlobalUserDataList] = useState([]);
+    const refreshGlobalUserDataList = async () => {
+        const result = await getGlobalUserDataList();
+        console.log("globaluserdatalist", result)
+        setGlobalUserDataList(result);
     }
+
     return (
-        <UserContext.Provider
-            value={{
-                context,
-                openEditDialog,
-                closeEditDialog,
-                setCurUserData,
-                handleEditCurUserData,
-                closeUploadListDialog,
-                updateCanvasStatus,
-                openUploadListDialog,
-                setHandleSubmitEdit,
-            }}
-        >
-            <div className="App">
-                <Header />
-                <main>
-                    <Actions />
-                    <UserTable userDataList={context.userDataList} />
-                </main>
-            </div>
-            <EditDialog
-                open={context.isEditDialogOpen}
-                handleClose={closeEditDialog}
-                onClose={onCloseEditDialog}
-            />
-            <UploadListDialog open={context.isUploadListDialogOpen} handleClose={closeUploadListDialog} onClose={onCloseUploadListDialog} />
-        </UserContext.Provider>
+<PortalContext.Provider value={{refreshGlobalUserDataList}}>
+    <div className="App">
+            <Header />
+            <main>
+                <Actions />
+                <GlobalUserTable userDataList={globalUserDataList}/>
+            </main>
+        </div>
+</PortalContext.Provider>
+        
+
     );
 }
 

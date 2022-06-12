@@ -16,6 +16,10 @@ const defaultCurUserData = {
         scaleY: 1,
         angle: 0,
     },
+    issuingAgency:{
+        type:"text",
+        content:""
+    }
 };
 
 

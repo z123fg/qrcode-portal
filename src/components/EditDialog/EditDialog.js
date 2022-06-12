@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, {useEffect, useState } from "react";
 import {
     Button,
     Dialog,
@@ -6,7 +6,6 @@ import {
     DialogTitle,
     TextField,
     DialogActions,
-    Input,
     Select,
     MenuItem,
     InputLabel,
@@ -17,15 +16,12 @@ import Canvas from "../Canvas/Canvas";
 import {
     destroyCanvas,
     generateCertWithData,
-    getCanvas,
     getSnapshotData,
     initCanvas,
     loadTemplate,
     updateCertEntry,
     updateProfileImage,
 } from "../../utils/canvasUtils";
-import { UserContext } from "../../App";
-import tableUserData2CanvasUserDataPipe from "../../utils/tableUserData2CanvasUserDataPipe";
 
 export const certTypeMap = {
     MAAM: "光谱分析（A类）中级人员",
@@ -40,7 +36,7 @@ export const certTypeMap = {
 };
 export const invCertTypeMap = (() => {
     const map = {};
-    Object.entries(certTypeMap).forEach(([k,v])=>{
+    Object.entries(certTypeMap).forEach(([k, v]) => {
         map[v] = k
     })
     return map
@@ -53,50 +49,80 @@ const TextfieldEntryLabelMap = {
     organization: "Organization",
     certNum: "Certificate Number",
     expDate: "Expiration Date",
+    issuingAgency: "Issuing Agency"
 };
 /* 
 
 */
 
-const EditDialog = ({ open, handleClose, onClose }) => {
-    const context = useContext(UserContext);
+const EditDialog = ({ open, handleClose, onClose, handleSubmit, handleDelete, handleDownload, curUserData }) => {
 
-    let {
-        context: { curUserData, isEditDialogOpen, lastEntry, isCanvasReady, handleSubmitEdit },
-        handleEditCurUserData,
-        updateCanvasStatus,
-    } = context;
-    const pickedCurUserData = tableUserData2CanvasUserDataPipe(curUserData);
-    const { certType, name, idNum, organization, certNum, expDate, profileImage} = pickedCurUserData;
+    const [isCanvasReady, setIsCanvasReady] = useState(false);
+    const [displayedCurUserData, setDisplayedCurUserData] = useState(curUserData);
+
+    const { certType, profileImage } = displayedCurUserData;
     const [imageFile, setImageFile] = useState("");
     useEffect(() => {
-        if (isEditDialogOpen) {
+        if (open) {
             setTimeout(async () => {
                 initCanvas();
                 await loadTemplate(certType.content);
-                generateCertWithData(pickedCurUserData);
-                updateCanvasStatus(true);
+                generateCertWithData(curUserData);
+                setIsCanvasReady(true);
             });
         }
-    }, [isEditDialogOpen, certType.content]);
+    }, [curUserData, open, certType.content]);
 
     useEffect(() => {
-        if (lastEntry !== null && isCanvasReady) {
-            updateCertEntry(lastEntry, pickedCurUserData[lastEntry].content);
+        setDisplayedCurUserData(curUserData)
+    }, [curUserData])
+
+    useEffect(() => {
+        if (isCanvasReady) {
+            updateCertEntry(displayedCurUserData);
         }
-    }, [name, idNum, organization, certNum, expDate]);
+    }, [displayedCurUserData]);
 
-    useEffect(() => {}, [profileImage]);
+    useEffect(() => {
+        if (isCanvasReady) {
+            updateProfileImage(profileImage.content);
+        }
+    }, [profileImage.content]);
 
-    const handleSubmit =() => {
-        let snapshot = getSnapshotData();
-        handleSubmitEdit(curUserData.serialNum.content,snapshot);
+    const handleClickSubmit = () => {
+        let snapshot = getSnapshotData(certType.content);
+        handleSubmit(snapshot);
         handleClose();
     }
+
+    const handleClickDelete = () => {
+        handleDelete();
+        handleDelete()
+    }
+
+    const handleEditDisplayedCurUserData = (e) => {
+        setDisplayedCurUserData(prev => ({
+            ...prev,
+            [e.target.name]: { ...prev[e.target.name], content: e.target.value },
+        }))
+    }
+
+    const handleClickClose = () => {
+        setIsCanvasReady(false)
+        handleClose();
+        onClose();
+    }
+
+    const handleClickDownload = () => {
+        handleDownload();
+    }
+
     const handleChangeUploadImage = (event) => {
         var reader = new FileReader();
         reader.onload = function (event) {
-            updateProfileImage(event.target.result);
+
+            setDisplayedCurUserData(prev => ({ ...prev, profileImage: { ...prev.profileImage, content: event.target.result } }))
+
         };
         reader.readAsDataURL(event.target.files[0]);
     };
@@ -105,11 +131,15 @@ const EditDialog = ({ open, handleClose, onClose }) => {
             maxWidth={"1000px"}
             open={open}
             className="edit-dialog"
-            onClose={onClose}
+            onClose={() => {
+                onClose();
+
+                handleClickClose()
+            }}
             TransitionProps={{
                 onExited: () => {
                     destroyCanvas();
-                    
+
                 },
             }}
         >
@@ -121,10 +151,10 @@ const EditDialog = ({ open, handleClose, onClose }) => {
                     <Select
                         labelId="demo-simple-select-label"
                         id="demo-simple-select"
-                        value={pickedCurUserData.certType.content}
+                        value={displayedCurUserData.certType.content}
                         label={TextfieldEntryLabelMap.certType}
                         name="certType"
-                        onChange={handleEditCurUserData}
+                        onChange={handleEditDisplayedCurUserData}
                     >
                         {Object.entries(certTypeMap).map(([key, value]) => (
                             <MenuItem key={key} value={key}>
@@ -133,14 +163,14 @@ const EditDialog = ({ open, handleClose, onClose }) => {
                         ))}
                     </Select>
                 </FormControl>
-                {Object.entries(pickedCurUserData)
+                {Object.entries(displayedCurUserData)
                     .filter(([key, value]) => value.type === "text")
                     .map(([key, value]) => {
                         return (
                             <TextField
                                 key={key}
                                 style={{ margin: "20px" }}
-                                onChange={handleEditCurUserData}
+                                onChange={handleEditDisplayedCurUserData}
                                 name={key}
                                 label={TextfieldEntryLabelMap[key]}
                                 variant="outlined"
@@ -172,10 +202,10 @@ const EditDialog = ({ open, handleClose, onClose }) => {
             </DialogContent>
 
             <DialogActions>
-                <Button onClick={handleSubmit}>Submit</Button>
-                <Button>Delete</Button>
-                <Button>Download</Button>
-                <Button onClick={handleClose}>Cancel</Button>
+                <Button onClick={handleClickSubmit}>Submit</Button>
+                <Button onClick={handleClickDelete}>Delete</Button>
+                <Button onClick={handleClickDownload}>Download</Button>
+                <Button onClick={handleClickClose}>Cancel</Button>
             </DialogActions>
         </Dialog>
     );
