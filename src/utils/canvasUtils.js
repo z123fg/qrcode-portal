@@ -1,5 +1,6 @@
 import { fabric } from "fabric";
-
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 export const defaultImageLeft = 1242;
 export const defaultImageTop = 1330;
 /* 
@@ -85,6 +86,7 @@ const defaultTextProps = {
     },
 };
 
+
 fabric.Canvas.prototype.getObjsByProp = function (...rest) {
     return this.getObjects().filter((obj) => {
         return rest.every((kv) => {
@@ -95,7 +97,7 @@ fabric.Canvas.prototype.getObjsByProp = function (...rest) {
 let canvas = null;
 export const getCanvas = () => canvas;
 export const initCanvas = () => {
-    destroyCanvas()
+    destroyCanvas();
     const originalWidth = 1654;
     const originalHeight = 2339;
     canvas = new fabric.Canvas("main-canvas", {
@@ -114,7 +116,7 @@ export const initCanvas = () => {
 export const destroyCanvas = () => {
     canvas?.dispose();
     canvas = null;
-}
+};
 
 export const loadTemplate = async (type) => {
     await new Promise((resolve) => {
@@ -138,17 +140,17 @@ export const loadTemplate = async (type) => {
 };
 
 export const updateCertEntry = (curUserData) => {
-    Object.entries(curUserData).forEach(([key,value])=>{
-        const targetObj = canvas.getObjsByProp({ entry:key })[0];
-        if(targetObj?.type==="text"&&targetObj.text !== value?.content){
-            targetObj.set({text:value.content})
-            canvas.renderAll()
+    Object.entries(curUserData).forEach(([key, value]) => {
+        const targetObj = canvas.getObjsByProp({ entry: key })[0];
+        if (targetObj?.type === "text" && targetObj.text !== value?.content) {
+            targetObj.set({ text: value.content });
+            canvas.renderAll();
         }
-    })
+    });
 };
 export const updateProfileImage = async (imgObj) => {
     const oldImageObj = canvas.getObjsByProp({ entry: "profileImage" })[0];
-    if(oldImageObj!==undefined) canvas.remove(oldImageObj);
+    if (oldImageObj !== undefined) canvas.remove(oldImageObj);
     fabric.Image.fromURL(imgObj, (image) => {
         image.set({
             ...defaultImageProps,
@@ -158,41 +160,92 @@ export const updateProfileImage = async (imgObj) => {
     });
 };
 
-export const generateCertWithData = (rowData) => {
-    const spriteDataList = Object.entries(rowData).map(([key, value]) => ({ entry: key, ...value }));
-    spriteDataList
-        .filter((item) => item.type === "text")
-        .forEach((item) => {
-            const obj = new fabric.Text(item.content, {
-                ...defaultTextProps,
-                left: item.left,
-                top: item.top,
-                entry: item.entry,
-                angle: item.angle,
-                scaleX: item.scaleX,
-                scaleY: item.scaleY,
-            });
-            canvas.add(obj);
-        });
+export const downloadCanvasAsImage = () => {
+    const url = canvas?.toDataURL({ format: "png", enableRetinaScaling: true, multiplier: 2.5 });
+    function downloadURI(uri, name) {
+        var link = document.createElement("a");
+        link.download = name;
+        link.href = uri;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+    downloadURI(url, "certicate.png");
+};
 
-    spriteDataList
-        .filter((item) => item.type === "image")
-        .forEach((item) => {
-            fabric.Image.fromURL(item.content, (image) => {
-                image.set({
-                    ...defaultImageProps,
-                    left: item.left,
-                    top: item.top,
+/* export const downloadMultipleCanvasImagesAsZip = async () => {
+    let zip = new JSZip();
+    for (let { filename, url } of imageURLsForZip) {
+        const blob = await fetch(url).then((res) => res.blob());
+        zip.file(`${filename}.png`, blob);
+    }
+    zip.generateAsync({ type: "blob" }).then(function (content) {
+        saveAs(content, "example.zip");
+    });
+}; */
+
+export const downloadMultipleCanvasImagesAsZip = async(userDataList, setProgress) => {
+    let zip = new JSZip();
+    for(let i = 0 ; i < userDataList.length; i++){
+        const userData = userDataList[i]
+        initCanvas();
+        await loadTemplate(userData.certType.content);
+        await generateCertWithData(userData);
+        const url = canvas?.toDataURL({ format: "png", enableRetinaScaling: true, multiplier: 2.5 });
+        const blob = await fetch(url).then((res) => res.blob());
+        zip.file(`${userData._id}.png`, blob);
+        setProgress(i);
+    }
+   
+    await zip.generateAsync({ type: "blob" }).then(function (content) {
+        saveAs(content, "certificates.zip");
+    });
+}
+
+export const generateCertWithData = async (rowData) => {
+    return new Promise((resolve) => {
+        console.log("rowData", rowData)
+        const spriteDataList = Object.entries(rowData).map(([key, value]) => ({ entry: key, ...value }));
+        spriteDataList
+            .filter((item) => item.type === "text")
+            .forEach((item) => {
+                const obj = new fabric.Text(item.content, {
+                    ...defaultTextProps,
+                    left: +item.left,
+                    top: +item.top,
                     entry: item.entry,
-                    angle: item.angle,
-                    scaleX: item.scaleX,
-                    scaleY: item.scaleY,
+                    angle: +item.angle,
+                    scaleX: +item.scaleX,
+                    scaleY: +item.scaleY,
                 });
-                canvas.add(image);
+                canvas.add(obj); canvas.renderAll();
             });
+       
+        Promise.all(
+            spriteDataList
+                .filter((item) => item.type === "image")
+                .map((item) => {
+                    return new Promise((resolve) => {
+                        fabric.Image.fromURL(item.content, (image) => {
+                            image.set({
+                                ...defaultImageProps,
+                                left: +item.left,
+                                top: +item.top,
+                                entry: item.entry,
+                                angle: +item.angle,
+                                scaleX: +item.scaleX,
+                                scaleY: +item.scaleY,
+                            });
+                            canvas.add(image);
+                            canvas.renderAll();
+                            resolve();
+                        });
+                    });
+                })
+        ).then(() => {
+            resolve();
         });
-
-    canvas.renderAll();
+    });
 };
 
 export const getSnapshotData = (certType) => {
@@ -211,28 +264,6 @@ export const getSnapshotData = (certType) => {
                 type: obj.type,
             };
         });
-        snapshotData.certType = {content:certType, type:"select"}
+    snapshotData.certType = { content: certType, type: "select" };
     return snapshotData;
 };
-
-/* 
-
-[
-    {
-        type:"text",
-        content:"aosidjo",
-        left:
-        top:
-        scale:
-        angle:
-    },
-    {
-        type:"image",
-        content:"sdsdf",
-        left
-        top
-        scale
-        angle
-    }
-]
-*/

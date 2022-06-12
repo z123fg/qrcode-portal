@@ -1,16 +1,30 @@
-import { Button, Dialog, DialogActions, DialogContent } from "@mui/material";
-import React, { useEffect, useState } from "react";
-import csv from "csvtojson";
+import {
+    Backdrop,
+    Box,
+    Button,
+    CircularProgress,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    IconButton,
+    LinearProgress,
+    TextField,
+    Typography,
+} from "@mui/material";
+import React, { useState } from "react";
 import csv2JSON from "../../utils/csv2JSON";
 import csvList2TableUserDataListPipe from "../../utils/csvList2TableUserDataListPipe";
 import UserTable from "../Table/UserTable";
 import defaultCurUserData from "../../mockData/defaultCurUserData";
-import { getSnapshotData } from "../../utils/canvasUtils";
 import EditDialog from "../EditDialog/EditDialog";
-import curUserData from "../../mockData/curUserData";
+import RefreshIcon from "@mui/icons-material/Refresh";
 
+import CheckIcon from "@mui/icons-material/Check";
+import CloseIcon from "@mui/icons-material/Close";
+import "./UploadListDialog.css";
+import HelperCanvasDialog from "../HelperCanvasDialog/HelperCanvasDialog";
 const userTableColumns = [
-    "serialNum",
+    "_id",
     "name",
     "idNum",
     "organization",
@@ -26,16 +40,37 @@ const UploadListDialog = ({ open, handleClose }) => {
     const [csvFile, setCsvFile] = useState("");
     const [userDataList, setUserDataList] = useState([]);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-    const [curUserData, setCurUserData] = useState(defaultCurUserData)
+    const [curUserData, setCurUserData] = useState(defaultCurUserData);
+    const [isHelperCanvasDialogOpen, setIsHelperCanvasDialogOpen] = useState(false)
+    const [keyword, setKeyword] = useState("");
+
+    const handleInputKeyword = (e) => {
+        setKeyword(e.target.value);
+    };
+    const generateFilteredList = () => {
+        const displayedList = userDataList.map((item) => ({
+            ...item,
+            hasProfileImage: {
+                content:
+                    item?.profileImage?.content?.length || "" > 10 ? (
+                        <CheckIcon sx={{ color: "green" }} />
+                    ) : (
+                        <CloseIcon sx={{ color: "red" }} />
+                    ),
+            },
+        }));
+        if (keyword === "") return displayedList;
+        return displayedList.filter((row) =>
+            Object.values(row).some((entry) => (entry.content + "").includes(keyword))
+        );
+    };
 
     const handleChangeUploadImage = (event) => {
         Array.from(event.target.files).forEach((file) => {
             var reader = new FileReader();
             reader.onload = function (event) {
                 setUserDataList((prev) => {
-                    const targetIndex = prev.findIndex(
-                        (item) => item.serialNum.content === file.name.split(".")[0]
-                    );
+                    const targetIndex = prev.findIndex((item) => item._id === file.name.split(".")[0]);
                     return [
                         ...prev.slice(0, targetIndex),
                         {
@@ -61,86 +96,137 @@ const UploadListDialog = ({ open, handleClose }) => {
     };
 
     const handleSubmitEdit = (snapshot) => {
-            setUserDataList((prev) => {
-                const targetIndex = prev.findIndex((item) => item.serialNum.content === curUserData.serialNum.content);
-                snapshot = { ...prev[targetIndex], ...snapshot };
-                return [...prev.slice(0, targetIndex), snapshot, ...prev.slice(targetIndex + 1)];
-            });
-    }
+        setUserDataList((prev) => {
+            const targetIndex = prev.findIndex((item) => item._id === curUserData._id);
+            snapshot = { ...prev[targetIndex], ...snapshot };
+            return [...prev.slice(0, targetIndex), snapshot, ...prev.slice(targetIndex + 1)];
+        });
+    };
 
     const handleDeleteEdit = () => {
-        setUserDataList(prev=>prev.filter(item=>item.serialNum.content === curUserData.serialNum.content));
+        setUserDataList((prev) => prev.filter((item) => item._id !== curUserData._id));
+        setIsEditDialogOpen(false);
+    };
+
+    const handleClickEditTableRow = (id) => {
+        setCurUserData(userDataList.find((item) => item._id === id));
+        setIsEditDialogOpen(true);
+    };
+
+    const onCloseDialog = () => {};
+
+
+    const handleClickDownloadZip = () => {
+        setIsHelperCanvasDialogOpen(true);
     }
-
-    const handleDownloadEdit = () => {
-
-    }
-
-    const handleClickEditTableRow = (serialNum) => {
-        setCurUserData(userDataList.find(item=>item.serialNum.content === serialNum));
-        setIsEditDialogOpen(true)
-    }
-
-    const onCloseDialog = () => {
-
-    }
-
+    console.log("udl", userDataList)
 
     return (
-        <Dialog open={open} maxWidth={"1000px"} onClose={onCloseDialog}TransitionProps={{
-            onExited: () => {
-                setUserDataList([]);
-                
-            },
-        }}>
-            <DialogContent>
-                <label htmlFor="csv-upload" style={{ margin: "20px" }}>
-                    <input
-                        value={csvFile}
-                        id="csv-upload"
-                        type={"file"}
-                        accept={".csv"}
-                        style={{ display: "none" }}
-                        onChange={handleUploadCSV}
-                    />
-                    <Button onClick={() => setCsvFile("")} component="span" variant="contained">
-                        Upload .csv file
-                    </Button>
-                </label>
-                <label htmlFor="image-upload" style={{ margin: "20px" }}>
-                    <input
-                        value={imageFile}
-                        id="image-upload"
-                        type={"file"}
-                        multiple
-                        accept="image/*"
-                        style={{ display: "none" }}
-                        onChange={handleChangeUploadImage}
-                    />
-                    <Button onClick={() => setImageFile("")} component="span" variant="contained">
-                        Upload Images
-                    </Button>
-                </label>
-                <UserTable userDataList={userDataList} handleClickEditTableRow={handleClickEditTableRow} columns={userTableColumns}/>
+        <Dialog
+            open={open}
+            maxWidth={"1000px"}
+            onClose={onCloseDialog}
+            TransitionProps={{
+                onExited: () => {
+                    setUserDataList([]);
+                },
+            }}
+        >
+            <DialogContent className="dialog-content">
+                <div className="upload-buttons__container">
+                    <label htmlFor="csv-upload">
+                        <input
+                            value={csvFile}
+                            id="csv-upload"
+                            type={"file"}
+                            accept={".csv"}
+                            style={{ display: "none" }}
+                            onChange={handleUploadCSV}
+                        />
+                        <Button onClick={() => setCsvFile("")} component="span" variant="contained">
+                            先上传 .csv 文件
+                        </Button>
+                    </label>
+                    <label htmlFor="image-upload" style={{ margin: "20px" }}>
+                        <input
+                            value={imageFile}
+                            id="image-upload"
+                            type={"file"}
+                            multiple
+                            accept="image/*"
+                            style={{ display: "none" }}
+                            onChange={handleChangeUploadImage}
+                            disabled={userDataList.length <= 0}
+                        />
+                        <Button
+                            onClick={() => setImageFile("")}
+                            disabled={userDataList.length <= 0}
+                            component="span"
+                            variant="contained"
+                        >
+                            再上传证件照（多个）
+                        </Button>
+                    </label>
+                </div>
+
+                {userDataList.length > 0 ? (
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "start",
+                            width: "100%",
+                            flexDirection: "column",
+                            gap: "20px",
+                        }}
+                    >
+                        <div style={{ display: "flex", gap: "10px" }}>
+                            <TextField
+                                label="Search"
+                                variant="outlined"
+                                onChange={handleInputKeyword}
+                                value={keyword}
+                                size="small"
+                            />
+                            <IconButton>
+                                <RefreshIcon />
+                            </IconButton>
+                        </div>
+                        <UserTable
+                            userDataList={generateFilteredList()}
+                            handleClickEditTableRow={handleClickEditTableRow}
+                            columns={userTableColumns}
+                        />
+                    </div>
+                ) : (
+                    <div>
+                        <Typography>没有找到证书信息</Typography>
+                    </div>
+                )}
             </DialogContent>
 
             <DialogActions>
-                <Button>Submit</Button>
-                <Button>Delete</Button>
-                <Button>Download</Button>
-                <Button onClick={handleClose}>Cancel</Button>
+                <Button>上传全部数据</Button>
+                <Button onClick={handleClickDownloadZip}>下载为zip压缩包</Button>
+                <Button onClick={handleClose}>取消</Button>
             </DialogActions>
-            <EditDialog 
+            <EditDialog
                 open={isEditDialogOpen}
                 curUserData={curUserData}
-                handleClose={()=>{
-                    setIsEditDialogOpen(false)
+                handleClose={() => {
+                    setIsEditDialogOpen(false);
                 }}
-                onClose={()=>{}}
+                onClose={() => {}}
                 handleSubmit={handleSubmitEdit}
                 handleDelete={handleDeleteEdit}
-                handleDownload={handleDownloadEdit}
             />
+            <HelperCanvasDialog open={isHelperCanvasDialogOpen} handleClose={()=>{setIsHelperCanvasDialogOpen(false)}} onClose={()=>{}} userDataList={userDataList}/>
+            {/* <Backdrop
+                sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.Dialog + 1 }}
+                open={getIsDownloadZipInProgress()}
+            >
+                <CircularProgress color="inherit" />
+            </Backdrop> */}
         </Dialog>
     );
 };

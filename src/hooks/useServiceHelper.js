@@ -1,0 +1,91 @@
+import { useContext } from "react";
+import { PortalContext } from "../App";
+import { login } from "../services/auth";
+import { createSingleUserData, createUserDataList, deleteUserData, getGlobalUserDataList, updateUserData } from "../services/userData";
+
+const useServiceHelper =  () => {
+    const { refreshGlobalUserDataList, setUserInfo, showBackdrop, showAlert } = useContext(PortalContext);
+
+    const createSingleUserDataCarefully = async (snapshot) => {
+        showBackdrop(true)
+        try{
+            
+            await createSingleUserData(snapshot);
+            refreshGlobalUserDataList();
+            showAlert({type:"success", message:"创建证书成功！"})
+        }
+        catch(err){
+            console.log("err",err);
+            if(err?.response?.status === 401){
+                alert("登录信息已经失效了，需要重新登陆。")
+                setUserInfo(null)
+            }else{
+                alert(`保存证书失败了，这里是错误信息，可以问我：${err?.response?.data?.message}`)
+            }
+            
+        }
+        showBackdrop(false)
+    }
+
+    const createUserDataListCarefully = async (snapshot) => {
+        /* try{
+            await createUserDataList(snapshot);
+            refreshGlobalUserDataList()
+        }
+        catch(err){
+            console.log("err",err);
+            if(err.response.status === 401){
+                alert("登录信息已经失效了，需要重新登陆。")
+                setUserInfo(null)
+            }else{
+                alert(`保存证书失败了，这里是错误信息，可以问我：${err.response.data.message}`)
+            }
+            
+        } */
+    }
+
+
+const updateUserDataCarefully = async (id) => {
+    showBackdrop(true)
+        try{
+            await updateUserData(id);
+            refreshGlobalUserDataList();
+            showAlert({type:"success", message:"更新证书成功！"})
+        }
+        catch(err){
+            console.log("err",err);
+            if(err?.response?.status === 401){
+                alert("登录信息已经失效了，需要重新登陆。")
+                setUserInfo(null)
+            }else{
+                alert(`修改证书失败了，这里是错误信息，可以问我：${err?.response?.data?.message}`)
+            }
+            
+        } 
+        showBackdrop(false)
+    }
+    const deleteUserDataCarefully = async (id) => {
+        showBackdrop(true)
+        try{
+            await deleteUserData(id);
+            refreshGlobalUserDataList();
+            showAlert({type:"success", message:"删除证书成功！"})
+        }
+        catch(err){
+            console.log("err",err);
+            if(err?.response?.status === 401){
+                alert("登录信息已经失效了，需要重新登陆。")
+                setUserInfo(null)
+            }else{
+                alert(`删除证书失败了，这里是错误信息，可以问我：${err?.response?.data?.message}`)
+            }
+            
+        } 
+        showBackdrop(false)
+    }
+    
+
+    return {createSingleUserDataCarefully,updateUserDataCarefully, createUserDataListCarefully, deleteUserDataCarefully}
+}
+
+export default useServiceHelper;

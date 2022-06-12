@@ -11,7 +11,12 @@ const csvList2TableUserDataListPipe = (csvList) => {
             if (key === "certType") {
                 value = invCertTypeMap[value];
             }
-            result[key] = { ...defaultCurUserData[key], content: value };
+            if (key === "_id") {
+                result[key] = value
+            }else{
+               result[key] = { ...defaultCurUserData[key], content: value }; 
+            }
+            
         }
 
         Object.entries(defaultCurUserData).forEach(([key, defaultEntryObj]) => {

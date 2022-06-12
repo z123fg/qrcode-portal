@@ -1,43 +1,72 @@
-import { Button, Typography } from "@mui/material";
-import React, { useState } from "react";
-import AuthDialog from "../LoginDialog/AuthDialog";
-import LoginDialog from "../LoginDialog/AuthDialog";
-import "./Header.css"
+import { Alert, Button, Typography } from "@mui/material";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { PortalContext } from "../../App";
+import AuthDialog from "../AuthDialog/AuthDialog";
+import "./Header.css";
 
 const Header = () => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [authDialogType, setAuthDialogType] = useState("login")
-    const [userInfo, setUserInfo] = useState(null)
+    const [authDialogType, setAuthDialogType] = useState("login");
+    const { userInfo, setUserInfo, alertInfo } = useContext(PortalContext);
+    const [isAlertVisible, setIsAlertVisible] = useState(false);
+    const timeoutRef = useRef();
+
+    useEffect(() => {
+        if (alertInfo) {
+            setIsAlertVisible(true);
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = setTimeout(() => {
+                setIsAlertVisible(false);
+            }, 10000);
+        }
+    }, [alertInfo]);
+
     const handleCloseDialog = () => {
-        setIsDialogOpen(false)
-    }
+        setIsDialogOpen(false);
+    };
 
     const handleClickLogout = () => {
-        setUserInfo(null)
-    }
+        setUserInfo(null);
+    };
     const handleClickLogin = () => {
         setIsDialogOpen(true);
-        setAuthDialogType("login")
-    }
+        setAuthDialogType("login");
+    };
 
     const handleClickRegister = () => {
         setIsDialogOpen(true);
         setAuthDialogType("register");
-    }
+    };
     return (
-        <header className="header">
-            <Typography variant="h6" color="#3E312E" component="div">QRcode Portal </Typography >
-            <div>{userInfo === null ?
-                <div style={{display:"flex", gap:"10px"}}>
-                    <Button color="secondary" variant="contained" onClick={handleClickLogin}>login</Button>
-                    <Button color="secondary" variant="contained" onClick={handleClickRegister}>Register</Button>
+        <div>
+            <header className="header">
+                <Typography variant="h6" color="#3E312E" component="div">
+                    QRcode Portal
+                </Typography>
+                <div>
+                    {userInfo === null ? (
+                        <div style={{ display: "flex", gap: "10px" }}>
+                            <Button color="secondary" variant="contained" onClick={handleClickLogin}>
+                                登录
+                            </Button>
+                            <Button color="secondary" variant="contained" onClick={handleClickRegister}>
+                                注册
+                            </Button>
+                        </div>
+                    ) : (
+                        <Button color="secondary" variant="contained" onClick={handleClickLogout}>
+                            登出
+                        </Button>
+                    )}
                 </div>
-                : <Button color="secondary" variant="contained" onClick={handleClickLogout}>logout</Button>}
-            </div>
-            <AuthDialog open={isDialogOpen} type={authDialogType} handleClose={handleCloseDialog} />
-        </header>
-    )
-}
+                <AuthDialog open={isDialogOpen} type={authDialogType} handleClose={handleCloseDialog} />
+            </header>
+            <div style={{position:"relative"}}>
+                            {isAlertVisible && <Alert style={{position:"absolute", width:"100%"}} severity={alertInfo?.type}>{alertInfo?.message}</Alert>}
 
+            </div>
+        </div>
+    );
+};
 
 export default Header;

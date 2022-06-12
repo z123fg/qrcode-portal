@@ -1,4 +1,4 @@
-import React, {useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     Button,
     Dialog,
@@ -10,12 +10,16 @@ import {
     MenuItem,
     InputLabel,
     FormControl,
+    Backdrop,
+    CircularProgress,
 } from "@mui/material";
 import "./EditDialog.css";
 import Canvas from "../Canvas/Canvas";
 import {
     destroyCanvas,
+    downloadCanvasAsImage,
     generateCertWithData,
+    getCanvas,
     getSnapshotData,
     initCanvas,
     loadTemplate,
@@ -37,10 +41,10 @@ export const certTypeMap = {
 export const invCertTypeMap = (() => {
     const map = {};
     Object.entries(certTypeMap).forEach(([k, v]) => {
-        map[v] = k
-    })
-    return map
-})()
+        map[v] = k;
+    });
+    return map;
+})();
 
 const TextfieldEntryLabelMap = {
     certType: "Certificate Type",
@@ -49,14 +53,13 @@ const TextfieldEntryLabelMap = {
     organization: "Organization",
     certNum: "Certificate Number",
     expDate: "Expiration Date",
-    issuingAgency: "Issuing Agency"
+    issuingAgency: "Issuing Agency",
 };
 /* 
 
 */
 
-const EditDialog = ({ open, handleClose, onClose, handleSubmit, handleDelete, handleDownload, curUserData }) => {
-
+const EditDialog = ({ open, handleClose, onClose, handleSubmit, handleDelete, curUserData }) => {
     const [isCanvasReady, setIsCanvasReady] = useState(false);
     const [displayedCurUserData, setDisplayedCurUserData] = useState(curUserData);
 
@@ -67,15 +70,19 @@ const EditDialog = ({ open, handleClose, onClose, handleSubmit, handleDelete, ha
             setTimeout(async () => {
                 initCanvas();
                 await loadTemplate(certType.content);
-                generateCertWithData(curUserData);
+                await generateCertWithData(curUserData);
+                console.log("objs2", getCanvas().getObjects());
+                getCanvas().setActiveObject(getCanvas().getObjects()[3])
                 setIsCanvasReady(true);
             });
+        } else {
+            setIsCanvasReady(false);
         }
     }, [curUserData, open, certType.content]);
 
     useEffect(() => {
-        setDisplayedCurUserData(curUserData)
-    }, [curUserData])
+        setDisplayedCurUserData(curUserData);
+    }, [curUserData]);
 
     useEffect(() => {
         if (isCanvasReady) {
@@ -91,59 +98,53 @@ const EditDialog = ({ open, handleClose, onClose, handleSubmit, handleDelete, ha
 
     const handleClickSubmit = () => {
         let snapshot = getSnapshotData(certType.content);
-        handleSubmit(snapshot);
-        handleClose();
-    }
-
-    const handleClickDelete = () => {
-        handleDelete();
-        handleDelete()
-    }
+        handleSubmit?.(snapshot);
+        handleClose?.();
+    };
 
     const handleEditDisplayedCurUserData = (e) => {
-        setDisplayedCurUserData(prev => ({
+        setDisplayedCurUserData((prev) => ({
             ...prev,
             [e.target.name]: { ...prev[e.target.name], content: e.target.value },
-        }))
-    }
+        }));
+    };
 
     const handleClickClose = () => {
-        setIsCanvasReady(false)
-        handleClose();
-        onClose();
-    }
+        handleClose?.();
+        onClose?.();
+    };
 
     const handleClickDownload = () => {
-        handleDownload();
-    }
+        downloadCanvasAsImage();
+    };
 
     const handleChangeUploadImage = (event) => {
         var reader = new FileReader();
         reader.onload = function (event) {
-
-            setDisplayedCurUserData(prev => ({ ...prev, profileImage: { ...prev.profileImage, content: event.target.result } }))
-
+            setDisplayedCurUserData((prev) => ({
+                ...prev,
+                profileImage: { ...prev.profileImage, content: event.target.result },
+            }));
         };
         reader.readAsDataURL(event.target.files[0]);
     };
     return (
         <Dialog
-            maxWidth={"1000px"}
             open={open}
+            maxWidth={"1000px"}
             className="edit-dialog"
             onClose={() => {
                 onClose();
-
-                handleClickClose()
+                console.log("onClose");
+                handleClickClose();
             }}
             TransitionProps={{
                 onExited: () => {
                     destroyCanvas();
-
                 },
             }}
         >
-            <DialogTitle>Add New User</DialogTitle>
+            <DialogTitle>编辑证书信息</DialogTitle>
 
             <DialogContent className="edit-dialog_form">
                 <FormControl style={{ margin: "20px" }}>
@@ -195,17 +196,17 @@ const EditDialog = ({ open, handleClose, onClose, handleSubmit, handleDelete, ha
                             setImageFile("");
                         }}
                     >
-                        Upload
+                        上传证件照
                     </Button>
                 </label>
                 <Canvas />
             </DialogContent>
 
             <DialogActions>
-                <Button onClick={handleClickSubmit}>Submit</Button>
-                <Button onClick={handleClickDelete}>Delete</Button>
-                <Button onClick={handleClickDownload}>Download</Button>
-                <Button onClick={handleClickClose}>Cancel</Button>
+                <Button onClick={handleClickSubmit}>提交</Button>
+                {handleDelete && <Button onClick={handleDelete}>删除此证书信息</Button>}
+                <Button onClick={handleClickDownload}>下载为图片</Button>
+                <Button onClick={handleClickClose}>取消</Button>
             </DialogActions>
         </Dialog>
     );
