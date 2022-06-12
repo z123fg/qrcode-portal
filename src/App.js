@@ -2,7 +2,6 @@ import "./App.css";
 import React, { createContext, useEffect, useState } from "react";
 import Header from "./components/Header/Header";
 import Actions from "./components/Actions/Actions";
-import UserTable from "./components/Table/UserTable";
 import { getGlobalUserDataList } from "./services/userData";
 import GlobalUserTable from "./components/GlobalTable/GlobalTable";
 import { Backdrop, CircularProgress, Typography } from "@mui/material";
@@ -35,7 +34,7 @@ function App() {
     }, [userInfo]);
 
     const refreshGlobalUserDataList = async () => {
-        showBackdrop(true)
+        showBackdrop(true);
         try {
             const result = await getGlobalUserDataList();
             console.log("globaluserdatalist", result);
@@ -50,12 +49,12 @@ function App() {
                 alert(`获取证书列表失败了，这里是错误信息，可以问我：${err?.response?.data?.message}`);
             }
         }
-        showBackdrop(false)
+        showBackdrop(false);
     };
 
     return (
         <PortalContext.Provider
-            value={{ refreshGlobalUserDataList, userInfo, setUserInfo,showBackdrop, alertInfo, showAlert }}
+            value={{ refreshGlobalUserDataList, userInfo, setUserInfo, showBackdrop, alertInfo, showAlert }}
         >
             <div className="App">
                 <Header />

@@ -3,7 +3,6 @@ import {
     Dialog,
     DialogContent,
     DialogTitle,
-    CircularProgress,
     Typography,
     LinearProgress,
 } from "@mui/material";
@@ -21,16 +20,16 @@ const HelperCanvasDialog = ({ open, handleClose, onClose, userDataList }) => {
                 setIsPending(true);
                 await downloadMultipleCanvasImagesAsZip(userDataList, setProgress);
                 setIsPending(false);
-                handleClose();
+                handleClickClose();
             });
         }
     }, [userDataList, open]);
-    useEffect(()=>{
-        if(!open){
+    useEffect(() => {
+        if (!open) {
             setProgress(0);
             setIsPending(false);
         }
-    },[open])
+    }, [open]);
 
     const handleClickClose = () => {
         handleClose();
@@ -43,8 +42,7 @@ const HelperCanvasDialog = ({ open, handleClose, onClose, userDataList }) => {
             maxWidth={"1000px"}
             open={open}
             className="helper-canvas-dialog"
-            onClose={() => {
-            }}
+            onClose={() => {}}
             TransitionProps={{
                 onExited: () => {
                     destroyCanvas();
@@ -57,7 +55,7 @@ const HelperCanvasDialog = ({ open, handleClose, onClose, userDataList }) => {
                 <div style={{ display: "none" }}>
                     <Canvas />
                 </div>
-                <Box sx={{ display: "flex", alignItems: "center", width:"100%" }}>
+                <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
                     <Box sx={{ width: "100%", mr: 1 }}>
                         <LinearProgress
                             variant="determinate"
@@ -66,7 +64,7 @@ const HelperCanvasDialog = ({ open, handleClose, onClose, userDataList }) => {
                     </Box>
                     <Box sx={{ minWidth: 35 }}>
                         <Typography variant="body2" color="text.secondary">{`${Math.round(
-                           (progress / userDataList.length) * 100
+                            (progress / userDataList.length) * 100
                         )}%`}</Typography>
                     </Box>
                 </Box>

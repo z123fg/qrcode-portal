@@ -61,9 +61,12 @@ const Header = () => {
                 </div>
                 <AuthDialog open={isDialogOpen} type={authDialogType} handleClose={handleCloseDialog} />
             </header>
-            <div style={{position:"relative"}}>
-                            {isAlertVisible && <Alert style={{position:"absolute", width:"100%"}} severity={alertInfo?.type}>{alertInfo?.message}</Alert>}
-
+            <div style={{ position: "relative" }}>
+                {isAlertVisible && (
+                    <Alert style={{ position: "absolute", width: "100%" }} severity={alertInfo?.type}>
+                        {alertInfo?.message}
+                    </Alert>
+                )}
             </div>
         </div>
     );

@@ -3,7 +3,6 @@ import defaultCurUserData from "../mockData/defaultCurUserData";
 
 //
 const csvList2TableUserDataListPipe = (csvList) => {
-
     return csvList.map((item) => {
         const result = {};
         for (let key in item) {
@@ -12,18 +11,17 @@ const csvList2TableUserDataListPipe = (csvList) => {
                 value = invCertTypeMap[value];
             }
             if (key === "_id") {
-                result[key] = value
-            }else{
-               result[key] = { ...defaultCurUserData[key], content: value }; 
+                result[key] = value;
+            } else {
+                result[key] = { ...defaultCurUserData[key], content: value };
             }
-            
         }
 
         Object.entries(defaultCurUserData).forEach(([key, defaultEntryObj]) => {
             if (result[key] === undefined) {
                 result[key] = defaultEntryObj;
             }
-        })
+        });
         return result;
     });
 };

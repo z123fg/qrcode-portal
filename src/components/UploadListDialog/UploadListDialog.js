@@ -1,13 +1,9 @@
 import {
-    Backdrop,
-    Box,
     Button,
-    CircularProgress,
     Dialog,
     DialogActions,
     DialogContent,
     IconButton,
-    LinearProgress,
     TextField,
     Typography,
 } from "@mui/material";
@@ -41,7 +37,7 @@ const UploadListDialog = ({ open, handleClose }) => {
     const [userDataList, setUserDataList] = useState([]);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [curUserData, setCurUserData] = useState(defaultCurUserData);
-    const [isHelperCanvasDialogOpen, setIsHelperCanvasDialogOpen] = useState(false)
+    const [isHelperCanvasDialogOpen, setIsHelperCanvasDialogOpen] = useState(false);
     const [keyword, setKeyword] = useState("");
 
     const handleInputKeyword = (e) => {
@@ -115,11 +111,10 @@ const UploadListDialog = ({ open, handleClose }) => {
 
     const onCloseDialog = () => {};
 
-
     const handleClickDownloadZip = () => {
         setIsHelperCanvasDialogOpen(true);
-    }
-    console.log("udl", userDataList)
+    };
+    console.log("udl", userDataList);
 
     return (
         <Dialog
@@ -220,7 +215,14 @@ const UploadListDialog = ({ open, handleClose }) => {
                 handleSubmit={handleSubmitEdit}
                 handleDelete={handleDeleteEdit}
             />
-            <HelperCanvasDialog open={isHelperCanvasDialogOpen} handleClose={()=>{setIsHelperCanvasDialogOpen(false)}} onClose={()=>{}} userDataList={userDataList}/>
+            <HelperCanvasDialog
+                open={isHelperCanvasDialogOpen}
+                handleClose={() => {
+                    setIsHelperCanvasDialogOpen(false);
+                }}
+                onClose={() => {}}
+                userDataList={userDataList}
+            />
             {/* <Backdrop
                 sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.Dialog + 1 }}
                 open={getIsDownloadZipInProgress()}

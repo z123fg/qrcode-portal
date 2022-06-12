@@ -10,8 +10,6 @@ import {
     MenuItem,
     InputLabel,
     FormControl,
-    Backdrop,
-    CircularProgress,
 } from "@mui/material";
 import "./EditDialog.css";
 import Canvas from "../Canvas/Canvas";
@@ -72,7 +70,7 @@ const EditDialog = ({ open, handleClose, onClose, handleSubmit, handleDelete, cu
                 await loadTemplate(certType.content);
                 await generateCertWithData(curUserData);
                 console.log("objs2", getCanvas().getObjects());
-                getCanvas().setActiveObject(getCanvas().getObjects()[3])
+                getCanvas().setActiveObject(getCanvas().getObjects()[3]);
                 setIsCanvasReady(true);
             });
         } else {

@@ -86,7 +86,6 @@ const defaultTextProps = {
     },
 };
 
-
 fabric.Canvas.prototype.getObjsByProp = function (...rest) {
     return this.getObjects().filter((obj) => {
         return rest.every((kv) => {
@@ -184,10 +183,10 @@ export const downloadCanvasAsImage = () => {
     });
 }; */
 
-export const downloadMultipleCanvasImagesAsZip = async(userDataList, setProgress) => {
+export const downloadMultipleCanvasImagesAsZip = async (userDataList, setProgress) => {
     let zip = new JSZip();
-    for(let i = 0 ; i < userDataList.length; i++){
-        const userData = userDataList[i]
+    for (let i = 0; i < userDataList.length; i++) {
+        const userData = userDataList[i];
         initCanvas();
         await loadTemplate(userData.certType.content);
         await generateCertWithData(userData);
@@ -196,15 +195,15 @@ export const downloadMultipleCanvasImagesAsZip = async(userDataList, setProgress
         zip.file(`${userData._id}.png`, blob);
         setProgress(i);
     }
-   
+
     await zip.generateAsync({ type: "blob" }).then(function (content) {
         saveAs(content, "certificates.zip");
     });
-}
+};
 
 export const generateCertWithData = async (rowData) => {
     return new Promise((resolve) => {
-        console.log("rowData", rowData)
+        console.log("rowData", rowData);
         const spriteDataList = Object.entries(rowData).map(([key, value]) => ({ entry: key, ...value }));
         spriteDataList
             .filter((item) => item.type === "text")
@@ -218,9 +217,10 @@ export const generateCertWithData = async (rowData) => {
                     scaleX: +item.scaleX,
                     scaleY: +item.scaleY,
                 });
-                canvas.add(obj); canvas.renderAll();
+                canvas.add(obj);
+                canvas.renderAll();
             });
-       
+
         Promise.all(
             spriteDataList
                 .filter((item) => item.type === "image")

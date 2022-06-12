@@ -38,8 +38,8 @@ const GlobalUserTable = ({ userDataList }) => {
     };
 
     const handleSubmitEdit = async (snapshot) => {
-        console.log("cud",curUserData);
-        snapshot = {...curUserData,...snapshot}
+        console.log("cud", curUserData);
+        snapshot = { ...curUserData, ...snapshot };
         await updateUserDataCarefully(snapshot);
         handleCloseEdit();
     };

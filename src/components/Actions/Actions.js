@@ -1,19 +1,17 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button, Typography, Paper } from "@mui/material";
 import "./Actions.css";
 import EditDialog from "../EditDialog/EditDialog";
 import defaultCurUserData from "../../mockData/defaultCurUserData";
 import UploadListDialog from "../UploadListDialog/UploadListDialog";
-import { createSingleUserData } from "../../services/userData";
-import { PortalContext } from "../../App";
 import useServiceHelper from "../../hooks/useServiceHelper";
 
 const Actions = () => {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isUploadListDialogOpen, setIsUploadListDialogOpen] = useState(false);
     const [curUserData, setCurUserData] = useState(defaultCurUserData);
-    const {createSingleUserDataCarefully} = useServiceHelper()
-    
+    const { createSingleUserDataCarefully } = useServiceHelper();
+
     /* useEffect(() => {
         fetch("../../public/metallographic-testing(entry).pdf")
             .then((res) => {
@@ -29,22 +27,17 @@ const Actions = () => {
     }, []); */
 
     const handleClickAddOneUser = () => {
-        setIsEditDialogOpen(true)
+        setIsEditDialogOpen(true);
     };
 
-  
-
     const handleSubmitEdit = async (snapshot) => {
-        console.log("snapshot", snapshot)
-       createSingleUserDataCarefully(snapshot)
-    }
+        console.log("snapshot", snapshot);
+        createSingleUserDataCarefully(snapshot);
+    };
 
     const onCloseEditDialog = () => {
         setCurUserData({ ...defaultCurUserData });
-    }
-
-
-
+    };
 
     return (
         <div className="actions-container">
@@ -63,11 +56,20 @@ const Actions = () => {
                 />
             </Paper>
             <Paper className="actions__paper">
-                <Button variant="contained" onClick={() => { setIsUploadListDialogOpen(true) }}>Add multiple user</Button>
+                <Button
+                    variant="contained"
+                    onClick={() => {
+                        setIsUploadListDialogOpen(true);
+                    }}
+                >
+                    Add multiple user
+                </Button>
 
                 <Typography>上传证书列表（csv）</Typography>
-                <UploadListDialog open={isUploadListDialogOpen} handleClose={() => setIsUploadListDialogOpen(false)} />
-
+                <UploadListDialog
+                    open={isUploadListDialogOpen}
+                    handleClose={() => setIsUploadListDialogOpen(false)}
+                />
             </Paper>
         </div>
     );

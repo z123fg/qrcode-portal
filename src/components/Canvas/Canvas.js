@@ -1,11 +1,9 @@
-import React, { useEffect, useRef } from "react";
-import { fabric } from "fabric";
-import {  generateCertWithData, getCanvas, initCanvas } from "../../utils/canvasUtils";
+import React from "react";
+
 const Canvas = () => {
-    
     return (
         <div>
-            <canvas style={{zIndex:999}} id="main-canvas" ></canvas>
+            <canvas style={{ zIndex: 999 }} id="main-canvas"></canvas>
         </div>
     );
 };
