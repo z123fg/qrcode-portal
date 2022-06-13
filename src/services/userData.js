@@ -19,9 +19,9 @@ userDataClient.interceptors.request.use((req) => {
 
 export const getGlobalUserDataList = async () => {
 
-        const res = await userDataClient.get("/");
-        return res.data.result;
-    
+    const res = await userDataClient.get("/");
+    return res.data.result;
+
 };
 
 export const createSingleUserData = async (userData) => {
@@ -29,10 +29,7 @@ export const createSingleUserData = async (userData) => {
 };
 
 export const createUserDataList = async (userDataList) => {
-    const res = await userDataClient
-        .post("/list", userDataList)
-        .catch((err) => console.log("createUserDataList err", err));
-    console.log("createUserDataList res", res);
+    const res = await userDataClient.post("/list", userDataList)
     return res;
 };
 

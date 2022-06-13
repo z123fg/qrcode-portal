@@ -19,6 +19,7 @@ import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import "./UploadListDialog.css";
 import HelperCanvasDialog from "../HelperCanvasDialog/HelperCanvasDialog";
+import useServiceHelper from "../../hooks/useServiceHelper";
 const userTableColumns = [
     "_id",
     "name",
@@ -39,6 +40,8 @@ const UploadListDialog = ({ open, handleClose }) => {
     const [curUserData, setCurUserData] = useState(defaultCurUserData);
     const [isHelperCanvasDialogOpen, setIsHelperCanvasDialogOpen] = useState(false);
     const [keyword, setKeyword] = useState("");
+    const { createUserDataListCarefully } = useServiceHelper();
+
 
     const handleInputKeyword = (e) => {
         setKeyword(e.target.value);
@@ -114,6 +117,10 @@ const UploadListDialog = ({ open, handleClose }) => {
     const handleClickDownloadZip = () => {
         setIsHelperCanvasDialogOpen(true);
     };
+
+    const handleClickSubmitList = () => {
+        createUserDataListCarefully(userDataList, handleClose());
+    }
     console.log("udl", userDataList);
 
     return (
@@ -201,7 +208,7 @@ const UploadListDialog = ({ open, handleClose }) => {
             </DialogContent>
 
             <DialogActions>
-                <Button>上传全部数据</Button>
+                <Button onClick={handleClickSubmitList}>上传全部数据</Button>
                 <Button onClick={handleClickDownloadZip}>下载为zip压缩包</Button>
                 <Button onClick={handleClose}>取消</Button>
             </DialogActions>

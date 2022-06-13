@@ -35,10 +35,10 @@ const UserTable = ({ userDataList, handleClickEditTableRow, columns }) => {
                                     {columns.map((key) => {
                                         let value;
                                         if (key === "certType") {
-                                            value = certTypeMap[value];
+                                            value = certTypeMap[row[key].content];
                                         } else if (key === "createTime" || key === "updateTime") {
-                                            value = moment(row[key]).local().format("YYYY-MM-DD HH:mm:ss");
-                                        } else if (key === "id") {
+                                            value = moment(+row[key].content).format("YYYY-MM-DD HH:mm:ss");
+                                        } else if (key === "_id") {
                                             value = row[key];
                                         } else {
                                             value = row[key]?.content;
