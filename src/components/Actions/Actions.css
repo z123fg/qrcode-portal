@@ -1,0 +1,19 @@
+.actions-container{
+    display: flex;
+    flex-direction: row;
+    gap:20px;
+    padding:50px;
+    width:100%;
+    box-sizing: border-box;
+    justify-content: center;
+}
+
+.actions__paper{
+    display: flex;
+    gap:20px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width:250px;
+    height:250px
+}

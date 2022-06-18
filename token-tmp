@@ -1,0 +1,13 @@
+{
+    "RequestId": "E7B4319F-9B07-57EF-96C8-C3A8A6DF8874",
+    "AssumedRoleUser": {
+        "Arn": "acs:ram::1299153890650559:role/sts-oss/test",
+        "AssumedRoleId": "373661468221852096:test"
+    },
+    "Credentials": {
+        "SecurityToken": "CAISyQJ1q6Ft5B2yfSjIr5b2MuLMlZwW4qGca0j6hTMge9ZGivDnjTz2IH9PendpBe4WtP42lG1S7vcclq1vRoRZHbNKh3iOtsY5yxioRqackQzcj9Vd+lfMewW6Dxr8w7WdAYHQR8/cffGAck3NkjQJr5LxaTSlWS7CU/iOkoU1VskLeQO6YDFafs80QDFvs8gHL3DcGO+wOxrx+ArqAVFvpxB3hBFDi+u2ydbO7QHF3h+oiL0MvY/2LpXhd852IJ57FM+v2+J3cqeEyC5X9x8ota59l/5D4iyV/IPfUUBL6BKKPq/M9cdzJQs+frI9Fa9Aob3klfpkvauRtfyukUccZLwOA3WHGt34nZaVIo7zaIZlL4ScEm/Wz9WCOqPytw4Zen8BPGtIAYF+cSEuUEByGmuAc//6ogibPB3MULSelaYtyoqidJkxOABFTRqAAaZAItm9C1ktPjF/f2SbJ2AeL3hazZg5QRPVtrat4RDxmCWN5K9aKPg0ezB17LCL0K498XE4VcYi9eGthOlxqu0DAT9pAU7sJD4+7ZOpWWOtjdz3rdjKq9jHWFC1IliQWiF6PBtZtwd+6PlqFLN+34wWVmNEAxx8CKQfgFXpnvFB",
+        "AccessKeyId": "STS.NUCyXxxC7UcwinKa3uwYje5Lo",
+        "AccessKeySecret": "4GFaRhUwHYQXYonGY4FsQ49FmpdEcQ8uYAMivRmHJtnu",
+        "Expiration": "2022-06-16T07:18:28Z"
+    }
+}
