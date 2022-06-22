@@ -3,6 +3,7 @@ import atob from "atob"
 const dataURL2Blob =  (dataURL) => {
     // convert base64 to raw binary data held in a string
     // doesn't handle URLEncoded DataURIs - see SO answer #6850276 for code that does this
+    console.log("dataURL",dataURL)
     var byteString = atob(dataURL.split(",")[1]);
 
     // separate out the mime component
@@ -21,7 +22,7 @@ const dataURL2Blob =  (dataURL) => {
 
     // write the ArrayBuffer to a blob, and you're done
     var blob = new Blob([ab], { type: mimeString });
-    return {file:blob, extension};
+    return {file:blob, extension,mimeString};
 };
 
 export default dataURL2Blob;

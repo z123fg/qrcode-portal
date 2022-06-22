@@ -38,11 +38,11 @@ const useServiceHelper = () => {
         }
         catch(err){
             console.log("err",err);
-            if(err.response.status === 401){
+            if(err?.response?.status === 401){
                 alert("登录信息已经失效了，需要重新登陆。")
                 setUserInfo(null)
             }else{
-                alert(`保存证书列表失败了，这里是错误信息，可以问我：${err.response.data.message}`)
+                alert(`保存证书列表失败了，这里是错误信息，可以问我：${err?.response?.data?.message}`)
             }
             
         }

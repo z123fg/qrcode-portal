@@ -27,8 +27,7 @@ import {
     updateProfileImage,
 } from "../../utils/canvasUtils";
 import OSS from "ali-oss";
-import axios from "axios";
-import { getStsToken } from "../../services/sts";
+import QRCode from "qrcode";
 
 export const certTypeMap = {
     MAAM: "光谱分析（A类）中级人员",
