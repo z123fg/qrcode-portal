@@ -8,7 +8,7 @@ import {
 } from "../services/userData";
 
 const useServiceHelper = () => {
-    const { refreshGlobalUserDataList, setUserInfo, showBackdrop, showAlert } = useContext(PortalContext);
+    const { refreshGlobalUserDataList, setUserInfo, showBackdrop, showAlert,setLinearProgressProps } = useContext(PortalContext);
 
     const createSingleUserDataCarefully = async (snapshot) => {
         showBackdrop(true);
@@ -29,9 +29,11 @@ const useServiceHelper = () => {
     };
 
     const createUserDataListCarefully = async (userDataList, onSuccess) => {
-        showBackdrop(true);
+        //showBackdrop(true);
+        setLinearProgressProps({progress:0, title:"正在上传证书图片及信息...", open:true})
+
         try{
-            await createUserDataList(userDataList);
+            await createUserDataList(userDataList, setLinearProgressProps);
             refreshGlobalUserDataList()
             showAlert({ type: "success", message: "创建证书列表成功！" });
             onSuccess()
@@ -46,7 +48,9 @@ const useServiceHelper = () => {
             }
             
         }
-        showBackdrop(false);
+        setLinearProgressProps({progress:null, title:null, open:false})
+
+       // showBackdrop(false);
     };
 
     const updateUserDataCarefully = async (userData) => {

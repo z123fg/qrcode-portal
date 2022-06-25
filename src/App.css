@@ -1,14 +1,18 @@
-.App .main{
-    display:flex;
+.App .main {
+    display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
     min-width: max-content;
     width: 100%;
 }
-.App{
+.App {
     display: flex;
     flex-direction: column;
     width: max-content;
     align-items: stretch;
+}
+html {
+    height: 100%;
+    background-color: whitesmoke;
 }

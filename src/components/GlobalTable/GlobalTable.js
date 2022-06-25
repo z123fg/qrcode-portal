@@ -20,6 +20,8 @@ import defaultCurUserData from "../../mockData/defaultCurUserData";
 import useServiceHelper from "../../hooks/useServiceHelper";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import { prepareCertImageForUpload } from "../../utils/canvasUtils";
+import intl from "../../intl/intl";
 
 const globalUserTableColumns = [
     "name",
@@ -54,9 +56,8 @@ const GlobalUserTable = ({ userDataList }) => {
 
     const handleSubmitEdit = async (snapshot) => {
         console.log("snapShot", snapshot, curUserData);
-
+        prepareCertImageForUpload(snapshot);
         await updateUserDataCarefully(snapshot);
-        handleCloseEdit();
     };
 
     const handleDeleteEdit = async () => {
@@ -120,7 +121,7 @@ const GlobalUserTable = ({ userDataList }) => {
                 >
                     <div style={{ display: "flex", gap: "10px" }}>
                         <TextField
-                            label="Search"
+                            label="搜索"
                             variant="outlined"
                             onChange={handleInputKeyword}
                             value={keyword}
@@ -130,11 +131,11 @@ const GlobalUserTable = ({ userDataList }) => {
                             <RefreshIcon />
                         </IconButton>
                         <FormControl>
-                            <InputLabel id="table-sort-option-select-label">Sort</InputLabel>
+                            <InputLabel id="table-sort-option-select-label">排序</InputLabel>
                             <Select
                                 size="small"
                                 labelId="table-sort-option-select-label"
-                                label="Sort"
+                                label="排序"
                                 value={tableSortOption}
                                 onChange={(e) => {
                                     setTableSortOption(e.target.value);
@@ -142,7 +143,7 @@ const GlobalUserTable = ({ userDataList }) => {
                             >
                                 {tableSortOptions.map((item) => (
                                     <MenuItem key={item} value={item}>
-                                        {item}
+                                        {intl[item]}
                                     </MenuItem>
                                 ))}
                             </Select>
@@ -170,6 +171,7 @@ const GlobalUserTable = ({ userDataList }) => {
                 handleSubmit={handleSubmitEdit}
                 handleDelete={handleDeleteEdit}
                 handleClose={handleCloseEdit}
+                isGlobal
             />
         </div>
     );

@@ -5,6 +5,7 @@ import EditDialog from "../EditDialog/EditDialog";
 import defaultCurUserData from "../../mockData/defaultCurUserData";
 import UploadListDialog from "../UploadListDialog/UploadListDialog";
 import useServiceHelper from "../../hooks/useServiceHelper";
+import { getCanvas, prepareCertImageForUpload } from "../../utils/canvasUtils";
 
 const Actions = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -31,8 +32,8 @@ const Actions = () => {
   };
 
   const handleSubmitEdit = async (snapshot) => {
-    console.log("snapshot", snapshot);
-    createSingleUserDataCarefully(snapshot);
+     prepareCertImageForUpload(snapshot);
+    await createSingleUserDataCarefully(snapshot);
   };
 
   const onCloseEditDialog = () => {};

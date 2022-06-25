@@ -23,7 +23,6 @@ export const getSTSToken = async () => {
 };
 
 export const getUploadLink = async (filename, mimeString) => {
-    console.log("filename", filename)
     const res = await stsClient.post(`/upload`,{filename, mimeString}); 
     return res
 };

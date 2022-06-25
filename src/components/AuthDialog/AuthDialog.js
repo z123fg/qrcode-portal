@@ -55,6 +55,7 @@ const AuthDialog = ({ open, handleClose, type }) => {
                     label="密码"
                     variant="outlined"
                 />
+              
             </DialogContent>
             <DialogActions>
                 <Button onClick={handleSubmit}>提交</Button>

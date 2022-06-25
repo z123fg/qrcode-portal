@@ -14,6 +14,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import "./UserTable.css";
 import { certTypeMap } from "../EditDialog/EditDialog";
 import { v4 as uuidv4 } from "uuid";
+import intl from "../../intl/intl";
 
 const UserTable = ({ userDataList, handleClickEditTableRow, columns }) => {
     return (
@@ -23,9 +24,9 @@ const UserTable = ({ userDataList, handleClickEditTableRow, columns }) => {
                     <TableHead>
                         <TableRow>
                             {columns.map((key) => (
-                                <TableCell key={key}>{key}</TableCell>
+                                <TableCell key={key}>{intl[key] }</TableCell>
                             ))}
-                            <TableCell>actions</TableCell>
+                            <TableCell>{intl.actions}</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -43,7 +44,7 @@ const UserTable = ({ userDataList, handleClickEditTableRow, columns }) => {
                                         } else {
                                             value = row[key]?.content;
                                         }
-                                        return <TableCell key={key + row._id || uuidv4()}>{value}</TableCell>;
+                                        return <TableCell style={{maxWidth:"200px", wordBreak:"break-all"}} key={key + row._id || uuidv4()}>{value}</TableCell>;
                                     })}
                                     <TableCell>
                                         <IconButton onClick={() => handleClickEditTableRow(row._id)}>

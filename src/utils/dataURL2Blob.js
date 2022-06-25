@@ -3,7 +3,6 @@ import atob from "atob"
 const dataURL2Blob =  (dataURL) => {
     // convert base64 to raw binary data held in a string
     // doesn't handle URLEncoded DataURIs - see SO answer #6850276 for code that does this
-    console.log("dataURL",dataURL)
     var byteString = atob(dataURL.split(",")[1]);
 
     // separate out the mime component

@@ -33,24 +33,17 @@ const Header = () => {
         setAuthDialogType("login");
     };
 
-    const handleClickRegister = () => {
-        setIsDialogOpen(true);
-        setAuthDialogType("register");
-    };
     return (
         <div>
             <header className="header">
-                <Typography variant="h6" color="#3E312E" component="div">
-                    QRcode Portal
+                <Typography variant="h6" color="whitesmoke" component="div">
+                    QRCode Portal
                 </Typography>
                 <div>
                     {userInfo === null ? (
                         <div style={{ display: "flex", gap: "10px" }}>
                             <Button color="secondary" variant="contained" onClick={handleClickLogin}>
                                 登录
-                            </Button>
-                            <Button color="secondary" variant="contained" onClick={handleClickRegister}>
-                                注册
                             </Button>
                         </div>
                     ) : (

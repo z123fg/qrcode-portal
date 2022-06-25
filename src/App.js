@@ -5,14 +5,18 @@ import Actions from "./components/Actions/Actions";
 import { getGlobalUserDataList } from "./services/userData";
 import GlobalUserTable from "./components/GlobalTable/GlobalTable";
 import { Backdrop, CircularProgress, Typography } from "@mui/material";
+import LinearProgressDialog from "./components/LinearProgressDialog/LinearProgressDialog";
 
 export const PortalContext = createContext();
+
 
 function App() {
     const [globalUserDataList, setGlobalUserDataList] = useState([]);
     const [alertInfo, showAlert] = useState(null);
     const [userInfo, setUserInfo] = useState(null);
     const [isBackDropOpen, showBackdrop] = useState(false);
+    const [linearProgressProps, setLinearProgressProps] = useState({progress:null, title:null, open:false});
+
 
     useEffect(() => {
         try {
@@ -53,7 +57,7 @@ function App() {
 
     return (
         <PortalContext.Provider
-            value={{ refreshGlobalUserDataList, userInfo, setUserInfo, showBackdrop, alertInfo, showAlert }}
+            value={{ refreshGlobalUserDataList, userInfo, setUserInfo, showBackdrop, alertInfo, showAlert, setLinearProgressProps }}
         >
             <div className="App">
                 <Header />
@@ -70,8 +74,10 @@ function App() {
                     )}
                 </div>
             </div>
+            <LinearProgressDialog {...linearProgressProps}/>
             <Backdrop
-                sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+            style={{zIndex: 35001}}
+                /* sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }} */
                 open={isBackDropOpen}
             >
                 <CircularProgress color="inherit" />

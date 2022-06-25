@@ -7,7 +7,7 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import csv2JSON from "../../utils/csv2JSON";
 import csvList2TableUserDataListPipe from "../../utils/csvList2TableUserDataListPipe";
 import UserTable from "../Table/UserTable";
@@ -20,6 +20,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import "./UploadListDialog.css";
 import HelperCanvasDialog from "../HelperCanvasDialog/HelperCanvasDialog";
 import useServiceHelper from "../../hooks/useServiceHelper";
+import { downloadMultipleCanvasImagesAsZip, initCanvas, prepareCertImageListForUpload, prepareMultipleCertImageForUpload } from "../../utils/canvasUtils";
+import { PortalContext } from "../../App";
 const userTableColumns = [
     "_id",
     "name",
@@ -38,10 +40,11 @@ const UploadListDialog = ({ open, handleClose }) => {
     const [userDataList, setUserDataList] = useState([]);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [curUserData, setCurUserData] = useState(defaultCurUserData);
-    const [isHelperCanvasDialogOpen, setIsHelperCanvasDialogOpen] = useState(false);
+    const [isHelperCanvasDialogStart, setIsHelperCanvasDialogStart] = useState(false);
     const [keyword, setKeyword] = useState("");
     const { createUserDataListCarefully } = useServiceHelper();
-
+    const {setLinearProgressProps} = useContext(PortalContext)
+    const [helperCanvasCallback, setHelperCanvasCallback] = useState();
 
     const handleInputKeyword = (e) => {
         setKeyword(e.target.value);
@@ -90,6 +93,10 @@ const UploadListDialog = ({ open, handleClose }) => {
 
     const handleUploadCSV = async (e) => {
         const csvList = await csv2JSON(e.target.files[0]);
+        if (csvList.some((item) => item.certNum.length <= 0 || item.idNum.length <= 0)) {
+            alert("请确保csv数据完整，身份证号和证书号不能为空");
+            return;
+        }
         const newUserDataList = csvList2TableUserDataListPipe(csvList);
         setUserDataList(newUserDataList);
     };
@@ -115,12 +122,19 @@ const UploadListDialog = ({ open, handleClose }) => {
     const onCloseDialog = () => {};
 
     const handleClickDownloadZip = () => {
-        setIsHelperCanvasDialogOpen(true);
+        setHelperCanvasCallback(()=>async()=>await downloadMultipleCanvasImagesAsZip(userDataList,setLinearProgressProps));
+        setIsHelperCanvasDialogStart(true);
     };
 
     const handleClickSubmitList = () => {
-        createUserDataListCarefully(userDataList, handleClose);
-    }
+        setHelperCanvasCallback(()=> async ()=>{
+            await prepareMultipleCertImageForUpload(userDataList,setLinearProgressProps);
+            await createUserDataListCarefully(userDataList, handleClose);
+        })
+        setIsHelperCanvasDialogStart(true);
+        
+        
+    };
 
     return (
         <Dialog
@@ -222,12 +236,11 @@ const UploadListDialog = ({ open, handleClose }) => {
                 handleDelete={handleDeleteEdit}
             />
             <HelperCanvasDialog
-                open={isHelperCanvasDialogOpen}
-                handleClose={() => {
-                    setIsHelperCanvasDialogOpen(false);
-                }}
-                onClose={() => {}}
+                helperCanvasCallback={helperCanvasCallback}
+                start={isHelperCanvasDialogStart}
+                stop={()=>setIsHelperCanvasDialogStart(false)}
                 userDataList={userDataList}
+                onStop={()=>{}}
             />
             {/* <Backdrop
                 sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.Dialog + 1 }}
