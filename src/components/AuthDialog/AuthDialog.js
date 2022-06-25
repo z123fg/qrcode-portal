@@ -34,9 +34,18 @@ const AuthDialog = ({ open, handleClose, type }) => {
         }
         showBackdrop(false)
     };
+
+    const handlePressEnter = (e) => {
+        const ENTER = 13;
+    
+        if (e.keyCode === ENTER) {
+            handleSubmit()
+        }
+      }
     return (
-        <Dialog open={open} className="login-dialog">
+        <Dialog open={open} className="login-dialog" onKeyUp={handlePressEnter}>
             <DialogTitle>{type === "login" ? "登录" : "注册"}</DialogTitle>
+        
             <DialogContent className="login-dialog_form">
                 <TextField
                     style={{ margin: "20px" }}
@@ -58,7 +67,7 @@ const AuthDialog = ({ open, handleClose, type }) => {
               
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleSubmit}>提交</Button>
+                <Button type="submit" onClick={handleSubmit}>提交</Button>
                 <Button onClick={handleClose}>取消</Button>
             </DialogActions>
         </Dialog>

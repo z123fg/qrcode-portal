@@ -32,6 +32,10 @@ const Header = () => {
         setIsDialogOpen(true);
         setAuthDialogType("login");
     };
+    const handleClickRegister = () => {
+        setIsDialogOpen(true);
+        setAuthDialogType("register");
+    };
 
     return (
         <div>
@@ -44,6 +48,9 @@ const Header = () => {
                         <div style={{ display: "flex", gap: "10px" }}>
                             <Button color="secondary" variant="contained" onClick={handleClickLogin}>
                                 登录
+                            </Button>
+                            <Button color="secondary" variant="contained" onClick={handleClickRegister}>
+                                注册
                             </Button>
                         </div>
                     ) : (
