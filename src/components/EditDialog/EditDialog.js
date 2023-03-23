@@ -52,6 +52,7 @@ export const invCertTypeMap = (() => {
     return map;
 })();
 
+const inputEntryList = ["name", "idNum", "organization", "certNum", "expDate", "issuingAgency"];
 
 const EditDialog = ({ open, handleClose, onClose, handleSubmit, handleDelete, curUserData, isGlobal }) => {
     const [displayedCurUserData, setDisplayedCurUserData] = useState(curUserData);
@@ -60,7 +61,6 @@ const EditDialog = ({ open, handleClose, onClose, handleSubmit, handleDelete, cu
     const [imageFile, setImageFile] = useState("");
     const [isError, setIsError] = useState(false);
     const { showBackdrop } = useContext(PortalContext);
-
     useEffect(() => {
         setDisplayedCurUserData(curUserData);
     }, [curUserData]);
@@ -68,15 +68,15 @@ const EditDialog = ({ open, handleClose, onClose, handleSubmit, handleDelete, cu
     useEffect(() => {
         (async () => {
             if (isCanvasRendered) {
-                showBackdrop(true)
+                showBackdrop(true);
                 setIsCanvasRendered(true);
                 updateCanvasStatus(false);
                 initCanvas();
-                await loadTemplate(certType.content);
+                await loadTemplate(curUserData.certType.content);
                 await generateCertWithData(curUserData);
-                await generateQRCode(curUserData)
+                await generateQRCode(curUserData);
                 updateCanvasStatus(true);
-                showBackdrop(false)
+                showBackdrop(false);
             }
         })();
     }, [isCanvasRendered]);
@@ -87,12 +87,10 @@ const EditDialog = ({ open, handleClose, onClose, handleSubmit, handleDelete, cu
         }
     }, [displayedCurUserData.certType.content]);
 
-
     useEffect(() => {
         if (open && isCanvasRendered && isCanvasReady) {
-            generateQRCode(displayedCurUserData)
+            generateQRCode(displayedCurUserData);
         }
-        
     }, [displayedCurUserData.certNum.content, displayedCurUserData.idNum.content]);
 
     useEffect(() => {
@@ -109,18 +107,17 @@ const EditDialog = ({ open, handleClose, onClose, handleSubmit, handleDelete, cu
 
     const handleClickSubmit = async () => {
         if (!validateFields(displayedCurUserData)) {
-            alert("必须填写身份证号和证书编号")
+            alert("必须填写身份证号和证书编号");
             setIsError(true);
             return;
         }
         let snapshot = getSnapshotData();
-        snapshot = { ...snapshot, ...displayedCurUserData };
+        snapshot = { ...displayedCurUserData, ...snapshot };
         await handleSubmit?.(snapshot);
         handleClose?.();
     };
 
     const generateQRCode = async (userData) => {
-       
         if (!validateFields(userData)) {
             return;
         }
@@ -133,17 +130,17 @@ const EditDialog = ({ open, handleClose, onClose, handleSubmit, handleDelete, cu
 
     const handleClickPreviewCertInquiry = () => {
         if (!validateFields(displayedCurUserData)) {
-            alert("必须填写身份证号和证书编号")
+            alert("必须填写身份证号和证书编号");
             setIsError(true);
             return;
         }
-        window.open(getQRCodeLink(displayedCurUserData), '_blank');
-    }
+        window.open(getQRCodeLink(displayedCurUserData), "_blank");
+    };
 
     const validateFields = (userData) => {
         if (
             userData.certNum.content.length <= 0 ||
-            userData.idNum.content.length <= 0
+            userData.idNum.content.length <= 0 
         ) {
             return false;
         }
@@ -214,13 +211,13 @@ const EditDialog = ({ open, handleClose, onClose, handleSubmit, handleDelete, cu
                         ))}
                     </Select>
                 </FormControl>
-                {Object.entries(displayedCurUserData)
-                    .filter(([key, value]) => intl[key])
-                    .filter(([key, value]) => value.type === "text")
+                {inputEntryList
+                    .map((key) => [key, displayedCurUserData[key]])
                     .map(([key, value]) => {
                         const isValidating = key === "certNum" || key === "idNum";
                         return (
                             <TextField
+                                multiline
                                 error={isValidating && value.content.length <= 0 && isError}
                                 helperText={
                                     isValidating && value.content.length <= 0 && isError && "此项不能为空"
@@ -236,29 +233,33 @@ const EditDialog = ({ open, handleClose, onClose, handleSubmit, handleDelete, cu
                             />
                         );
                     })}
-    <div style={{display:"flex",flexDirection:"row", gap:"20px"}}>
-       <label htmlFor="contained-button-file">
-                    <input
-                        onChange={handleChangeUploadImage}
-                        style={{ display: "none" }}
-                        accept="image/*"
-                        id="contained-button-file"
-                        type="file"
-                        value={imageFile}
-                    />
-                    <Button
-                        variant="contained"
-                        component="span"
-                        onClick={() => {
-                            setImageFile("");
-                        }}
-                    >
-                        上传证件照
-                    </Button>
-                </label>
-                {isGlobal===true&&<Button variant="outlined" onClick={handleClickPreviewCertInquiry}>点此预览二维码证书查询结果</Button> }
-    </div>
-                
+                <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
+                    <label htmlFor="contained-button-file">
+                        <input
+                            onChange={handleChangeUploadImage}
+                            style={{ display: "none" }}
+                            accept="image/*"
+                            id="contained-button-file"
+                            type="file"
+                            value={imageFile}
+                        />
+                        <Button
+                            variant="contained"
+                            component="span"
+                            onClick={() => {
+                                setImageFile("");
+                            }}
+                        >
+                            上传证件照
+                        </Button>
+                    </label>
+                    {isGlobal === true && (
+                        <Button variant="outlined" onClick={handleClickPreviewCertInquiry}>
+                            点此预览二维码证书查询结果
+                        </Button>
+                    )}
+                </div>
+
                 <Canvas />
             </DialogContent>
 

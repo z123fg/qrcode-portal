@@ -55,7 +55,6 @@ const GlobalUserTable = ({ userDataList }) => {
     };
 
     const handleSubmitEdit = async (snapshot) => {
-        console.log("snapShot", snapshot, curUserData);
         prepareCertImageForUpload(snapshot);
         await updateUserDataCarefully(snapshot);
     };
@@ -64,7 +63,6 @@ const GlobalUserTable = ({ userDataList }) => {
         await deleteUserDataCarefully(curUserData._id);
         handleCloseEdit();
     };
-
     const handleClickEditTableRow = (id) => {
         setCurUserData(userDataList.find((item) => item._id === id));
         setIsEditDialogOpen(true);

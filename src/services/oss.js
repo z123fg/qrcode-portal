@@ -5,6 +5,12 @@ import { takeLast4Digits } from "../utils/takeLast4Digits";
 import { getUploadLink } from "./sts";
 
 export async function uploadProfileImage2OSS(userData) {
+    const src = userData.profileImage.content;
+
+    if (src.slice(0, 5) !== "data:"){ 
+        //throw new Error("请检查图片格式");
+        return;
+    }
     const { file: imageFile, extension, mimeString } = dataURL2Blob(userData.profileImage.content);
     const filenameWithExtensionAndPath = `/profile-photo/${userData.certNum.content}_${takeLast4Digits(
         userData.idNum.content
@@ -19,11 +25,10 @@ export async function uploadProfileImage2OSS(userData) {
 }
 
 export async function uploadCertImage2OSS(userData) {
-
     const { file: imageFile, extension, mimeString } = dataURL2Blob(userData.certImage.content);
-    const filenameWithExtensionAndPath = `/cert-image/${userData.certNum.content}_${takeLast4Digits(
-        userData.idNum.content
-    )}.${extension}`;
+    const filenameWithExtensionAndPath = `/cert-image/${takeLast4Digits(userData.idNum.content)}-${
+        userData.certNum.content
+    }.${extension}`;
     // object表示上传到OSS的文件名称。
     // file表示浏览器中需要上传的文件，支持HTML5 file和Blob类型。
     const { data: signedURL } = await getUploadLink(`${filenameWithExtensionAndPath}`, mimeString);
@@ -40,7 +45,6 @@ export const uploadImageForSingleUserData = async (userData) => {
             userData.profileImage.content = "";
         } else {
             await uploadProfileImage2OSS(userData);
-            
         }
         await uploadCertImage2OSS(userData);
     } catch (err) {
@@ -49,7 +53,7 @@ export const uploadImageForSingleUserData = async (userData) => {
     }
 };
 
-export const uploadImagesForUserDataList = async (userDataList,setLinearProgressProps) => {
+export const uploadImagesForUserDataList = async (userDataList, setLinearProgressProps) => {
     let count = 0;
     try {
         //await prepareCertImageListForUpload(userDataList);
@@ -63,7 +67,11 @@ export const uploadImagesForUserDataList = async (userDataList,setLinearProgress
                 }
                 await uploadCertImage2OSS(userData);
                 count++;
-                setLinearProgressProps({progress:Math.round(count/userDataList.length*100), title:"正在上传证书图片及信息...", open:true})
+                setLinearProgressProps({
+                    progress: Math.round((count / userDataList.length) * 100),
+                    title: "正在上传证书图片及信息...",
+                    open: true,
+                });
             })();
         });
         await Promise.all(promiseArr);
