@@ -33,6 +33,8 @@ import { PortalContext } from "../../App";
 import intl from "../../intl/intl";
 
 export const certTypeMap = {
+    WTOP: "焊接热处理操作人员",
+    WTTP: "焊接热处理技术人员",
     MAAM: "光谱分析（A类）中级人员",
     MAAS: "光谱分析（A类）高级人员",
     MABM: "光谱分析（B类）中级人员",
@@ -140,7 +142,7 @@ const EditDialog = ({ open, handleClose, onClose, handleSubmit, handleDelete, cu
     const validateFields = (userData) => {
         if (
             userData.certNum.content.length <= 0 ||
-            userData.idNum.content.length <= 0 
+            userData.idNum.content.length <= 0
         ) {
             return false;
         }
